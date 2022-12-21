@@ -2,9 +2,10 @@
 title: Density ratio estimation by kernel mean matching
 author: Thom Volker
 format: html
+bibliography: kmm.bib
 ---
 
-__This document is heavily inspired by the book *Density Ratio Estimation in Machine Learning* [@sugiyama], and enriches their content with accompanying code for the example.__
+__This document is heavily inspired by the book *Density Ratio Estimation in Machine Learning* [@sugiyama2012density], and enriches their content with accompanying code for the example.__
 
 Density ratio estimation without going through density estimation can be achieved through moment matching. There are both finite-order moment matching techniques, as well as infinite-order moment matching techniques. The advantage of the latter is that it is consistent, in the sense that it converges to the true density ratio as the sample sizes grow to infinity.
 
@@ -15,7 +16,7 @@ $$
 K(\boldsymbol{x}, \boldsymbol{x}') = 
 \exp \Bigg(- \frac{\lVert\boldsymbol{x} - \boldsymbol{x}'\rVert^2}{2\sigma^2}\Bigg)
 $$
-is an example of a universal reproducing kernel. It has been shown that the solution of the following optimization problem agrees with the true density-ratio function [@huang; @gretton]:
+is an example of a universal reproducing kernel. It has been shown that the solution of the following optimization problem agrees with the true density-ratio function [@huang2006correcting; @gretton2009covariate]:
 $$
 \min_{r\in\mathcal{R}} \Bigg\lVert
 \int K(\boldsymbol{x}, \cdot) 
@@ -170,10 +171,10 @@ $$
 \frac{1}{n_{\text{de}}} [\boldsymbol{1}_{n_{\text{de}}}; -\boldsymbol{1}_{n_{\text{de}}}]^T 
 \hat{\boldsymbol{r}}_{\text{de}} \leq [(\epsilon + 1), (\epsilon - 1)]^T.
 $$
-In other words, we use the constraints $\hat{r}_{\text{de}, i} \in [0, B]$, $i = 1, 2, \dots, n_{\text{de}}$, and $|\frac{1}{n_{\text{de}}} \sum^{n_{\text{de}}}_{i=1} \hat{r}_{\text{de}, i} -1| \leq \epsilon$. The first constraints limit $\hat{r}_{\text{de}, i}$ to stay between $0$ and $B$, which reflects the scope of the discrepancy between $p_1$ and $p_2$. The second constraint imposes a normalization over $\hat{r}_{\text{de}, i}$ such that $\hat{r}_{\text{de}, i}(x) p_2(x) = p_1(x)$ is a density. The small value $\epsilon$ can be regarded as the normalization precision. The original *kernel mean matching* paper suggests setting $B=1000$ and $\epsilon = \frac{\sqrt{n_{\text{de}}} - 1}{\sqrt{n_{\text{de}}}}$.
+In other words, we use the constraints $\hat{r}_{\text{de}, i} \in [0, B]$, $i = 1, 2, \dots, n_{\text{de}}$, and $|\frac{1}{n_{\text{de}}} \sum^{n_{\text{de}}}_{i=1} \hat{r}_{\text{de}, i} -1| \leq \epsilon$. The first constraints limit $\hat{r}_{\text{de}, i}$ to stay between $0$ and $B$, which reflects the scope of the discrepancy between $p_1$ and $p_2$. The second constraint imposes a normalization over $\hat{r}_{\text{de}, i}$ such that $\hat{r}_{\text{de}, i}(x) p_2(x) = p_1(x)$ is a density. The small value $\epsilon$ can be regarded as the normalization precision. The original *kernel mean matching* paper suggests setting $B=1000$ and $\epsilon = \frac{\sqrt{n_{\text{de}}} - 1}{\sqrt{n_{\text{de}}}}$ [@miao2015ensemble].
 
 
-For the quadratic programming problem solving software `solve.QP` from the `quadprog` package in `R`, we  transform our problem into something of the form
+For the quadratic programming problem solving software `solve.QP` from the `quadprog` package in `R` [@quadprog], we  transform our problem into something of the form
 $$
 \min(-d^Tb + 1/2 b^T D b),
 $$

@@ -84,6 +84,25 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 
@@ -131,13 +150,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<p><strong>This document is heavily inspired by the book <em>Density Ratio Estimation in Machine Learning</em> <span class="citation" data-cites="sugiyama">[@sugiyama]</span>, and enriches their content with accompanying code for the example.</strong></p>
+<p><strong>This document is heavily inspired by the book <em>Density Ratio Estimation in Machine Learning</em> <span class="citation" data-cites="sugiyama2012density">(<a href="#ref-sugiyama2012density" role="doc-biblioref">Sugiyama, Suzuki, and Kanamori 2012</a>)</span>, and enriches their content with accompanying code for the example.</strong></p>
 <p>Density ratio estimation without going through density estimation can be achieved through moment matching. There are both finite-order moment matching techniques, as well as infinite-order moment matching techniques. The advantage of the latter is that it is consistent, in the sense that it converges to the true density ratio as the sample sizes grow to infinity.</p>
 <p>Kernel mean matching is one approach to infinite-order moment matching that allows to efficiently match all the moments using kernel functions. Under the fixed design approach, the density ratio is estimated only at the observed sample points.</p>
 <p>With kernel mean matching, a universal reproducing kernel <span class="math inline">\(K(\boldsymbol{x}, \boldsymbol{x}')\)</span> is used as a non-linear transformation. The <em>Gaussian kernel</em> <span class="math display">\[
 K(\boldsymbol{x}, \boldsymbol{x}') =
 \exp \Bigg(- \frac{\lVert\boldsymbol{x} - \boldsymbol{x}'\rVert^2}{2\sigma^2}\Bigg)
-\]</span> is an example of a universal reproducing kernel. It has been shown that the solution of the following optimization problem agrees with the true density-ratio function <span class="citation" data-cites="huang gretton">[@huang; @gretton]</span>: <span class="math display">\[
+\]</span> is an example of a universal reproducing kernel. It has been shown that the solution of the following optimization problem agrees with the true density-ratio function <span class="citation" data-cites="huang2006correcting gretton2009covariate">(<a href="#ref-huang2006correcting" role="doc-biblioref">Huang et al. 2006</a>; <a href="#ref-gretton2009covariate" role="doc-biblioref">Gretton et al. 2009</a>)</span>: <span class="math display">\[
 \min_{r\in\mathcal{R}} \Bigg\lVert
 \int K(\boldsymbol{x}, \cdot)
 p^*_{\text{nu}}(\boldsymbol{x}) \text{d}\boldsymbol{x} -
@@ -261,8 +280,8 @@ r(\boldsymbol{x})p^*_{\text{de}}(\boldsymbol{x})  \text{d}\boldsymbol{x}
 \]</span> and <span class="math display">\[
 \frac{1}{n_{\text{de}}} [\boldsymbol{1}_{n_{\text{de}}}; -\boldsymbol{1}_{n_{\text{de}}}]^T
 \hat{\boldsymbol{r}}_{\text{de}} \leq [(\epsilon + 1), (\epsilon - 1)]^T.
-\]</span> In other words, we use the constraints <span class="math inline">\(\hat{r}_{\text{de}, i} \in [0, B]\)</span>, <span class="math inline">\(i = 1, 2, \dots, n_{\text{de}}\)</span>, and <span class="math inline">\(|\frac{1}{n_{\text{de}}} \sum^{n_{\text{de}}}_{i=1} \hat{r}_{\text{de}, i} -1| \leq \epsilon\)</span>. The first constraints limit <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> to stay between <span class="math inline">\(0\)</span> and <span class="math inline">\(B\)</span>, which reflects the scope of the discrepancy between <span class="math inline">\(p_1\)</span> and <span class="math inline">\(p_2\)</span>. The second constraint imposes a normalization over <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> such that <span class="math inline">\(\hat{r}_{\text{de}, i}(x) p_2(x) = p_1(x)\)</span> is a density. The small value <span class="math inline">\(\epsilon\)</span> can be regarded as the normalization precision. The original <em>kernel mean matching</em> paper suggests setting <span class="math inline">\(B=1000\)</span> and <span class="math inline">\(\epsilon = \frac{\sqrt{n_{\text{de}}} - 1}{\sqrt{n_{\text{de}}}}\)</span>.</p>
-<p>For the quadratic programming problem solving software <code>solve.QP</code> from the <code>quadprog</code> package in <code>R</code>, we transform our problem into something of the form <span class="math display">\[
+\]</span> In other words, we use the constraints <span class="math inline">\(\hat{r}_{\text{de}, i} \in [0, B]\)</span>, <span class="math inline">\(i = 1, 2, \dots, n_{\text{de}}\)</span>, and <span class="math inline">\(|\frac{1}{n_{\text{de}}} \sum^{n_{\text{de}}}_{i=1} \hat{r}_{\text{de}, i} -1| \leq \epsilon\)</span>. The first constraints limit <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> to stay between <span class="math inline">\(0\)</span> and <span class="math inline">\(B\)</span>, which reflects the scope of the discrepancy between <span class="math inline">\(p_1\)</span> and <span class="math inline">\(p_2\)</span>. The second constraint imposes a normalization over <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> such that <span class="math inline">\(\hat{r}_{\text{de}, i}(x) p_2(x) = p_1(x)\)</span> is a density. The small value <span class="math inline">\(\epsilon\)</span> can be regarded as the normalization precision. The original <em>kernel mean matching</em> paper suggests setting <span class="math inline">\(B=1000\)</span> and <span class="math inline">\(\epsilon = \frac{\sqrt{n_{\text{de}}} - 1}{\sqrt{n_{\text{de}}}}\)</span> <span class="citation" data-cites="miao2015ensemble">(<a href="#ref-miao2015ensemble" role="doc-biblioref">Miao, Farahat, and Kamel 2015</a>)</span>.</p>
+<p>For the quadratic programming problem solving software <code>solve.QP</code> from the <code>quadprog</code> package in <code>R</code> <span class="citation" data-cites="quadprog">(<a href="#ref-quadprog" role="doc-biblioref">Turlach, Weingessel, and Moler 2019</a>)</span>, we transform our problem into something of the form <span class="math display">\[
 \min(-d^Tb + 1/2 b^T D b),
 \]</span> subject to constraints <span class="math display">\[
 A^Tb \geq b_0.
@@ -319,9 +338,26 @@ A^Tb \geq b_0.
 </div>
 </div>
 <p>When inspecting the results, we see that both solutions are reasonably accurate in the regions were there is relatively a lot of data for both densities. When there is relatively little data, there are some bumps in the density ratio estimates. Yet, overall, both solutions come quite close to the true density ratio.</p>
+
 </section>
 
-</main>
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-gretton2009covariate" class="csl-entry" role="doc-biblioentry">
+Gretton, Arthur, Alex Smola, Jiayuan Huang, Marcel Schmittfull, Karsten Borgwardt, and Bernhard Schölkopf. 2009. <span>“Covariate Shift by Kernel Mean Matching.”</span> <em>Dataset Shift in Machine Learning</em> 3 (4): 5.
+</div>
+<div id="ref-huang2006correcting" class="csl-entry" role="doc-biblioentry">
+Huang, Jiayuan, Arthur Gretton, Karsten Borgwardt, Bernhard Schölkopf, and Alex Smola. 2006. <span>“Correcting Sample Selection Bias by Unlabeled Data.”</span> <em>Advances in Neural Information Processing Systems</em> 19.
+</div>
+<div id="ref-miao2015ensemble" class="csl-entry" role="doc-biblioentry">
+Miao, Yun-Qian, Ahmed K Farahat, and Mohamed S Kamel. 2015. <span>“Ensemble Kernel Mean Matching.”</span> In <em>2015 IEEE International Conference on Data Mining</em>, 330–38. IEEE.
+</div>
+<div id="ref-sugiyama2012density" class="csl-entry" role="doc-biblioentry">
+Sugiyama, Masashi, Taiji Suzuki, and Takafumi Kanamori. 2012. <em>Density Ratio Estimation in Machine Learning</em>. Cambridge University Press.
+</div>
+<div id="ref-quadprog" class="csl-entry" role="doc-biblioentry">
+Turlach, Berwin A., Andreas Weingessel, and Cleve Moler. 2019. <em>Quadprog: Functions to Solve Quadratic Programming Problems</em>. <a href="https://CRAN.R-project.org/package=quadprog">https://CRAN.R-project.org/package=quadprog</a>.
+</div>
+</div></section></div></main>
 <!-- /main column -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
