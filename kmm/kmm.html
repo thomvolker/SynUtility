@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Thom Volker">
+
+<title>Density ratio estimation by kernel mean matching</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="kmm_files/libs/clipboard/clipboard.min.js"></script>
+<script src="kmm_files/libs/quarto-html/quarto.js"></script>
+<script src="kmm_files/libs/quarto-html/popper.min.js"></script>
+<script src="kmm_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="kmm_files/libs/quarto-html/anchor.min.js"></script>
+<link href="kmm_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="kmm_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="kmm_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="kmm_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="kmm_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Density ratio estimation by kernel mean matching</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Thom Volker </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p><strong>This document is heavily inspired by the book <em>Density Ratio Estimation in Machine Learning</em> <span class="citation" data-cites="sugiyama">[@sugiyama]</span>, and enriches their content with accompanying code for the example.</strong></p>
+<p>Density ratio estimation without going through density estimation can be achieved through moment matching. There are both finite-order moment matching techniques, as well as infinite-order moment matching techniques. The advantage of the latter is that it is consistent, in the sense that it converges to the true density ratio as the sample sizes grow to infinity.</p>
+<p>Kernel mean matching is one approach to infinite-order moment matching that allows to efficiently match all the moments using kernel functions. Under the fixed design approach, the density ratio is estimated only at the observed sample points.</p>
+<p>With kernel mean matching, a universal reproducing kernel <span class="math inline">\(K(\boldsymbol{x}, \boldsymbol{x}')\)</span> is used as a non-linear transformation. The <em>Gaussian kernel</em> <span class="math display">\[
+K(\boldsymbol{x}, \boldsymbol{x}') =
+\exp \Bigg(- \frac{\lVert\boldsymbol{x} - \boldsymbol{x}'\rVert^2}{2\sigma^2}\Bigg)
+\]</span> is an example of a universal reproducing kernel. It has been shown that the solution of the following optimization problem agrees with the true density-ratio function <span class="citation" data-cites="huang gretton">[@huang; @gretton]</span>: <span class="math display">\[
+\min_{r\in\mathcal{R}} \Bigg\lVert
+\int K(\boldsymbol{x}, \cdot)
+p^*_{\text{nu}}(\boldsymbol{x}) \text{d}\boldsymbol{x} -
+\int K(\boldsymbol{x}, \cdot)
+r(\boldsymbol{x})p^*_{\text{de}}(\boldsymbol{x})  \text{d}\boldsymbol{x}
+\Bigg\rVert^2_\mathcal{R},
+\]</span> where <span class="math inline">\(\mathcal{R}\)</span> denotes a universal reproducing kernel Hilbert space and <span class="math inline">\(\lVert\cdot \rVert_\mathcal{R}\)</span> denotes its norm.</p>
+<section id="analytical-solution-to-kernel-mean-matching" class="level1">
+<h1>Analytical solution to kernel mean matching</h1>
+<p>An empirical version of the problem is expressed as <span class="math display">\[
+\min_{\boldsymbol{r} \in \mathbb{R}^{n_\text{de}}}
+\Bigg[
+\frac{1}{n^2_\text{de}}
+\boldsymbol{r}^T\boldsymbol{K}_{\text{de,de}}\boldsymbol{r} -
+\frac{2}{n_\text{de}n_{\text{nu}}}
+\boldsymbol{r}^T \boldsymbol{K}_{\text{de,nu}} \boldsymbol{1}_{n_{\text{nu}}},
+\Bigg]
+\]</span> where <span class="math inline">\(\boldsymbol{K}_{\text{de,de}}\)</span> and <span class="math inline">\(\boldsymbol{K}_{\text{de,nu}}\)</span> denote the kernel Gram matrices defined by <span class="math display">\[
+[\boldsymbol{K}_{\text{de,de}}]_{j,j'} =
+K(\boldsymbol{x}_j^\text{de}, \boldsymbol{x}_{j'}^\text{de})
+~~~~ \text{and} ~~~~
+[\boldsymbol{K}_{\text{de,nu}}]_{j,i} =
+K(\boldsymbol{x}_j^\text{de}, \boldsymbol{x}_{i}^\text{nu}),
+\]</span> respectively. Taking the derivative with respect to <span class="math inline">\(\boldsymbol{r}\)</span> yields <span class="math display">\[
+\hat{\boldsymbol{r}}_\text{de} =
+\frac{n_\text{de}}{n_{\text{nu}}} \boldsymbol{K}_{\text{de,de}}^{-1}
+\boldsymbol{K}_{\text{de,de}} \boldsymbol{1}_{n_{\text{nu}}}.
+\]</span></p>
+<p>Let’s work this out for an example. Consider the true densities <span class="math inline">\(p^*_1\)</span> and <span class="math inline">\(p^* _2\)</span>, which are defined as <span class="math display">\[
+p^*_1(x) = \mathcal{N}(x; 1, 1^2)
+~~~~ \text{and} ~~~~
+p^*_2(x) = \mathcal{N}(x; 0, 2^2),
+\]</span> where <span class="math inline">\(\mathcal{N}(x; \mu, \sigma^2)\)</span> denotes the Gaussian density with mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma^2\)</span>.</p>
+<p><strong>Specify empirical distribution</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>curve1 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="dv">1</span>, <span class="dv">1</span>)          <span class="co"># numerator</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>curve2 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">dnorm</span>(x, <span class="dv">0</span>, <span class="dv">2</span>)          <span class="co"># denominator</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ratio  <span class="ot">&lt;-</span> <span class="cf">function</span>(x) (<span class="fu">curve1</span>(x) <span class="sc">/</span> <span class="fu">curve2</span>(x)) <span class="co"># ratio</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Sample data</strong></p>
+<p>In this example, we consider two samples of <span class="math inline">\(n_1 = n_2 = 200\)</span> observations each.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate samples from both distributions</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">200</span>, <span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">200</span>, <span class="dv">0</span>, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Load required packages</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.2.2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(quadprog)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Specify auxiliary functions</strong></p>
+<p>In our example, we use <em>kernel mean matching</em> with the Gaussian kernel <span class="math display">\[
+K(x,x') = \exp \Bigg(-\frac{(x-x')^2}{2\sigma^2}\Bigg),
+\]</span> where the Gaussian kernel width <span class="math inline">\(\sigma\)</span> is set to the median distance between all samples, which is a popular heuristic in kernel methods. Note that to make the kernel Gram matrix of the denominator <span class="math inline">\(\boldsymbol{K}_{\text{de,de}}\)</span> positive definite, we need to add a ridge penalty to the diagonal. We choose the ridge penalty to equal <span class="math inline">\(4\)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gaussian kernel function for the data</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>kernelfunc <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">sigma =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(sigma)) {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    sigma <span class="ot">&lt;-</span> <span class="fu">abs</span>(x <span class="sc">-</span> y) <span class="sc">|&gt;</span> <span class="fu">median</span>()</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">exp</span>(<span class="sc">-</span>(x <span class="sc">-</span> y)<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> (<span class="dv">2</span> <span class="sc">*</span> sigma<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Make kernel Gram matrix, which is a pairwise similarity measure, K(x,x') = k_{i,i'} (x_i, x_i') </span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>gram <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">sigma =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create pairwise grid</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  vgram <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(x, y)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create kernel gram matrix (pairwise similarity with x in rows, y in columns)</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kernelfunc</span>(vgram[,<span class="dv">1</span>], vgram[,<span class="dv">2</span>], <span class="at">sigma =</span> sigma) <span class="sc">|&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">matrix</span>(<span class="fu">length</span>(x))</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>rhat <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, <span class="at">sigma =</span> <span class="cn">NULL</span>, <span class="at">ridge =</span> <span class="fl">1e-06</span>) {</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># estimate density ratio</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sample size of x</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  nd  <span class="ot">&lt;-</span> <span class="fu">length</span>(x)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sample size of y</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  nn  <span class="ot">&lt;-</span> <span class="fu">length</span>(y)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create gram matrix of x with itself</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  Kdd <span class="ot">&lt;-</span> <span class="fu">gram</span>(x, x, <span class="at">sigma =</span> sigma)</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create gram matrix of x and y</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>  Kdn <span class="ot">&lt;-</span> <span class="fu">gram</span>(x, y, <span class="at">sigma =</span> sigma)</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create vector of ones</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>  one <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, nn)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add ridge penalty</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>  Kdd <span class="ot">&lt;-</span> Kdd <span class="sc">+</span> ridge <span class="sc">*</span> <span class="fu">diag</span>(<span class="fu">nrow</span>(Kdd))</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute analytic solution</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>  (nd <span class="sc">/</span> nn) <span class="sc">*</span> <span class="fu">solve</span>(Kdd) <span class="sc">%*%</span> Kdn <span class="sc">%*%</span> one</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify common sigma based on discrepancy between x and y. </span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>sigma <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(<span class="at">X1 =</span> p1, <span class="at">X2 =</span> p2) <span class="sc">|&gt;</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>  {\(x) <span class="fu">abs</span>(x<span class="sc">$</span>X1 <span class="sc">-</span> x<span class="sc">$</span>X2)}() <span class="sc">|&gt;</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">median</span>()</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>analytical <span class="ot">&lt;-</span> <span class="fu">rhat</span>(p2, p1, <span class="at">sigma =</span> sigma, <span class="at">ridge =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="constrained-kernel-mean-matching" class="level1">
+<h1>Constrained kernel mean matching</h1>
+<p>When one wants to include non-negativity constraints, normalization constraints and/or an upper bound, one can obtain a solution by solving a convex linearly constrained quadratic programming problem. In this case, we have the same optimization problem, subject to a set of constraints. That is, we solve <span class="math display">\[
+\min_{r\in\mathcal{R}} \Bigg\lVert
+\int K(\boldsymbol{x}, \cdot)
+p^*_{\text{nu}}(\boldsymbol{x}) \text{d}\boldsymbol{x} -
+\int K(\boldsymbol{x}, \cdot)
+r(\boldsymbol{x})p^*_{\text{de}}(\boldsymbol{x})  \text{d}\boldsymbol{x}
+\Bigg\rVert^2_\mathcal{R},
+\]</span> subject to <span class="math display">\[
+\boldsymbol{0} \leq \hat{\boldsymbol{r}}_\text{de} \leq B \boldsymbol{1},
+\]</span> and <span class="math display">\[
+\frac{1}{n_{\text{de}}} [\boldsymbol{1}_{n_{\text{de}}}; -\boldsymbol{1}_{n_{\text{de}}}]^T
+\hat{\boldsymbol{r}}_{\text{de}} \leq [(\epsilon + 1), (\epsilon - 1)]^T.
+\]</span> In other words, we use the constraints <span class="math inline">\(\hat{r}_{\text{de}, i} \in [0, B]\)</span>, <span class="math inline">\(i = 1, 2, \dots, n_{\text{de}}\)</span>, and <span class="math inline">\(|\frac{1}{n_{\text{de}}} \sum^{n_{\text{de}}}_{i=1} \hat{r}_{\text{de}, i} -1| \leq \epsilon\)</span>. The first constraints limit <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> to stay between <span class="math inline">\(0\)</span> and <span class="math inline">\(B\)</span>, which reflects the scope of the discrepancy between <span class="math inline">\(p_1\)</span> and <span class="math inline">\(p_2\)</span>. The second constraint imposes a normalization over <span class="math inline">\(\hat{r}_{\text{de}, i}\)</span> such that <span class="math inline">\(\hat{r}_{\text{de}, i}(x) p_2(x) = p_1(x)\)</span> is a density. The small value <span class="math inline">\(\epsilon\)</span> can be regarded as the normalization precision. The original <em>kernel mean matching</em> paper suggests setting <span class="math inline">\(B=1000\)</span> and <span class="math inline">\(\epsilon = \frac{\sqrt{n_{\text{de}}} - 1}{\sqrt{n_{\text{de}}}}\)</span>.</p>
+<p>For the quadratic programming problem solving software <code>solve.QP</code> from the <code>quadprog</code> package in <code>R</code>, we transform our problem into something of the form <span class="math display">\[
+\min(-d^Tb + 1/2 b^T D b),
+\]</span> subject to constraints <span class="math display">\[
+A^Tb \geq b_0.
+\]</span> We can transform our problem into the above specification by setting <span class="math inline">\(D = \boldsymbol{K}_\text{de,de}\)</span>, <span class="math inline">\(b = \boldsymbol{K}_\text{de,nu}\boldsymbol{1}_{n_\text{nu}}\)</span>, <span class="math inline">\(A = [-\boldsymbol{1}_{n_{\text{de}}}, \boldsymbol{1}_{n_{\text{de}}}, \boldsymbol{I}_{n_{\text{de}}}, -\boldsymbol{I}_{n_{\text{de}}}]\)</span>, where <span class="math inline">\(\boldsymbol{1}_{n_{\text{de}}}\)</span> denotes a column vector of length <span class="math inline">\(n_\text{de}\)</span> and <span class="math inline">\(\boldsymbol{I}_{n_{\text{de}}}\)</span> denotes the <span class="math inline">\(n_{\text{de}}\)</span>-dimensional identity matrix, and choosing <span class="math inline">\(b_0 = [n_\text{de}(\epsilon + 1), n_{\text{de}} (\epsilon - 1), \boldsymbol{0}_{n_{\text{de}}}^T, -\boldsymbol{1000}_{n_{\text{de}}}^T]^T\)</span>, where the first two terms are scalars, and the latter two terms are column vectors of length <span class="math inline">\(n_{\text{de}}\)</span>, such that <span class="math inline">\(b_0\)</span> is a single column vector of length <span class="math inline">\(2 * (n_{\text{de}} + 1)\)</span>.</p>
+<p><strong>Optimization problem</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kernel gram matrix of distance of denominator with itself</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Kdd <span class="ot">&lt;-</span> <span class="fu">gram</span>(p2, p2, <span class="at">sigma =</span> sigma) <span class="sc">+</span> <span class="fu">diag</span>(<span class="fu">length</span>(p2)) <span class="sc">*</span> <span class="dv">4</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Kernel gram matrix of distance of denominator with the numerator</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>Kdn <span class="ot">&lt;-</span> <span class="fu">gram</span>(p2, p1)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Constraints matrix that will be multiplied with the ratio</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="sc">-</span><span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(Kdd)), <span class="co"># the ratio in combination with the denominator</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>           <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(Kdd)),  <span class="co"># density should approximately integrate to 1</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>           <span class="fu">diag</span>(<span class="fu">ncol</span>(Kdd)),    <span class="co"># the density ratio should be positive, and is</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>           <span class="sc">-</span><span class="fu">diag</span>(<span class="fu">ncol</span>(Kdd)))   <span class="co"># constrained to be smaller than 1000 everywhere</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Bounds with respect to the integration</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>eps <span class="ot">&lt;-</span> (<span class="fu">sqrt</span>(<span class="fu">ncol</span>(Kdd)) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> (<span class="fu">sqrt</span>(<span class="fu">ncol</span>(Kdd)))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Second part of constraints, t(A) %*% r &gt;= b</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fu">ncol</span>(Kdd) <span class="sc">*</span> (eps <span class="sc">+</span> <span class="dv">1</span>), <span class="fu">ncol</span>(Kdd) <span class="sc">*</span> (eps <span class="sc">-</span> <span class="dv">1</span>), <span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">ncol</span>(Kdd)), <span class="sc">-</span><span class="fu">rep</span>(<span class="dv">1000</span>, <span class="fu">ncol</span>(Kdd)))</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve the optimization problem</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>out <span class="ot">&lt;-</span> <span class="fu">solve.QP</span>(<span class="at">Dmat =</span> Kdd, <span class="at">dvec =</span> Kdn <span class="sc">%*%</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">ncol</span>(Kdn)), <span class="at">Amat =</span> A, <span class="at">bvec =</span> b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="results" class="level1">
+<h1>Results</h1>
+<p><strong>Visualize results</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> dnorm, <span class="at">args =</span> <span class="fu">list</span>(<span class="at">mean =</span> <span class="dv">1</span>, <span class="at">sd =</span> <span class="dv">1</span>), <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"Pde"</span>)) <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> dnorm, <span class="at">args =</span> <span class="fu">list</span>(<span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>), <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"Pnu"</span>)) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="dv">6</span>, <span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="st">"Density"</span>, <span class="at">palette =</span> <span class="st">"Set1"</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(.<span class="dv">15</span>, .<span class="dv">9</span>)) <span class="sc">+</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_function</span>(<span class="at">fun =</span> ratio, <span class="fu">aes</span>(<span class="at">col =</span> <span class="st">"True ratio"</span>)) <span class="sc">+</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> p2, <span class="at">y =</span> analytical, <span class="at">col =</span> <span class="st">"Analytical"</span>)) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> p2, <span class="at">y =</span> out<span class="sc">$</span>solution, <span class="at">col =</span> <span class="st">"Constrained"</span>)) <span class="sc">+</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="sc">-</span><span class="dv">6</span>, <span class="dv">6</span>) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="sc">-</span><span class="fl">0.3</span>, <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="st">"Density ratio"</span>, <span class="at">palette =</span> <span class="st">"Set1"</span>) <span class="sc">+</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">87</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="kmm_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>When inspecting the results, we see that both solutions are reasonably accurate in the regions were there is relatively a lot of data for both densities. When there is relatively little data, there are some bumps in the density ratio estimates. Yet, overall, both solutions come quite close to the true density ratio.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
