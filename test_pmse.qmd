@@ -1,0 +1,128 @@
+---
+title: "Can the $pMSE$ detect missing relationships between variables?"
+format: html
+date: last-modified
+author: Thom Benjamin Volker
+---
+
+The answer is "No; at least it's not very good".
+
+# Properties $pMSE$ for CART, logistic regression and lasso regression
+
+```{r}
+#| message: false
+#| warning: false
+library(synthpop)
+library(patchwork)
+library(purrr)
+library(dplyr)
+library(glmnet)
+```
+
+
+## Generate data
+
+### Three predictor variables
+
+```{r}
+set.seed(123)
+
+N <- 500
+r <- 0.5
+
+P3 <- 3
+M3 <- rep(0, P3)
+
+SR3 <- matrix(r, P3, P3)
+diag(SR3) <- 1
+
+SS3 <- diag(P3)
+
+XR3 <- rnorm(N*P3) |> matrix(N, P3) %*% chol(SR3)
+XS3 <- rnorm(N*P3) |> matrix(N, P3) %*% chol(SS3)
+```
+
+### Ten predictor variables
+
+```{r}
+P10 <- 10
+M10 <- rep(0, P10)
+
+SR10 <- matrix(r, P10, P10)
+diag(SR10) <- 1
+
+SS10 <- diag(P10)
+
+XR10 <- rnorm(N*P10) |> matrix(N, P10) %*% chol(SR10)
+XS10 <- rnorm(N*P10) |> matrix(N, P10) %*% chol(SS10)
+```
+
+### Twenty predictor variables
+
+```{r}
+P20 <- 20
+M20 <- rep(0, P20)
+
+SR20 <- matrix(r, P20, P20)
+diag(SR20) <- 1
+
+SS20 <- diag(P20)
+
+XR20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SR20)
+XS20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SS20)
+```
+
+## Compare real and synthetic data
+
+```{r}
+#| cache: true
+#| message: false
+CART <- map2_dbl(list(XR3, XR10, XR20),
+                 list(XS3, XS10, XS20),
+                 ~synthpop::utility.gen(data.frame(.x),
+                                        data.frame(.y),
+                                        method = "cart",
+                                        print.flag=F)$S_pMSE)
+
+
+logistic <- map2_dbl(list(XR3, XR10, XR20),
+                     list(XS3, XS10, XS20),
+                     ~synthpop::utility.gen(data.frame(.x),
+                                            data.frame(.y),
+                                            method = "logit",
+                                            print.flag=F,
+                                            maxorder = 1)$S_pMSE)
+
+lasso <- map2_dbl(list(XR3, XR10, XR20),
+                  list(XS3, XS10, XS20),
+                  function(real, synthetic) {
+                    form <- paste0("Synthetic ~ .^3 + ", 
+                                   paste0("I(X", 1:ncol(real), "^2)", collapse = " + "),
+                                   " + ",
+                                   paste0("I(X", 1:ncol(real), "^3)", collapse = " + "))
+                    dat <- bind_rows(Real = data.frame(real),
+                                     Synthetic = data.frame(synthetic),
+                                    .id = "Synthetic")
+                    X   <- model.matrix(as.formula(form), dat)[,-1]
+                    Y   <- factor(dat$Synthetic)
+                    mod <- cv.glmnet(x = X, y = Y, alpha = 1, family = "binomial")
+                    p   <- predict(mod, newx = X, s = mod$lambda.min, type = "response")
+                    mean((p-0.5)^2) / ((ncol(X))*0.5^3/nrow(X))
+                  })
+
+data.frame(CART = CART,
+           Logistic = logistic,
+           Lasso = lasso) |>
+  knitr::kable() |>
+  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+So, we can conclude that the $pMSE$ is not very good at detecting missed relationships between variables, and the problem gets worse when the dimensionality of the data increases. Note that the estimates of the lasso are conservative, as the number of variables in the predictor matrix is chosen to be the number of parameters in the model (and thus shrinkage is not accounted for). Using a (probably) overly optimistic estimate (only the non-zero coefficients), the standardized $pMSE$ would be around $7$.
+
+```{r}
+map2(list(XR3, XR10, XR20),
+     list(XS3, XS10, XS20),
+     ~utility.tables(data.frame(.x), data.frame(.y)))
+```
+
+According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).
