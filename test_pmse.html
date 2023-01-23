@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Thom Benjamin Volker">
-<meta name="dcterms.date" content="2023-01-22">
+<meta name="dcterms.date" content="2023-01-23">
 
 <title>Can the pMSE detect missing relationships between variables?</title>
 <style>
@@ -131,7 +131,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 22, 2023</p>
+      <p class="date">January 23, 2023</p>
     </div>
   </div>
   
@@ -149,7 +149,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="generate-data" class="level2">
 <h2 class="anchored" data-anchor-id="generate-data">Generate data</h2>
@@ -351,6 +352,69 @@ For more details of all scores use print.tabs = TRUE.</code></pre>
 </div>
 </div>
 <p>According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).</p>
+</section>
+</section>
+<section id="other-techniques-for-assessing-distributional-similarity" class="level1">
+<h1>Other techniques for assessing distributional similarity</h1>
+<section id="pca-dimension-reduction" class="level2">
+<h2 class="anchored" data-anchor-id="pca-dimension-reduction">PCA dimension reduction</h2>
+<p>With Kolmogorov-Smirnov test on the first principal component</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(XS3, XS10, XS20),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>     <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       USV <span class="ot">&lt;-</span> <span class="fu">svd</span>(D)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       D <span class="sc">%*%</span> USV<span class="sc">$</span>v <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>         <span class="fu">matrix</span>(<span class="at">ncol =</span> <span class="fu">ncol</span>(D), <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(D)))) <span class="sc">|&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>         <span class="fu">data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>         <span class="fu">mutate</span>(<span class="at">Synthetic =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">each =</span> <span class="fu">nrow</span>(D)<span class="sc">/</span><span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>         <span class="fu">ggplot</span>(<span class="fu">aes</span>(Dim1, Dim2, <span class="at">col =</span> Synthetic)) <span class="sc">+</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>         <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>     }) <span class="sc">|&gt;</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(XS3, XS10, XS20),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>     <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       USV <span class="ot">&lt;-</span> <span class="fu">svd</span>(D)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       R <span class="ot">&lt;-</span> real <span class="sc">%*%</span> USV<span class="sc">$</span>v</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> synthetic <span class="sc">%*%</span> USV<span class="sc">$</span>v</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>       <span class="fu">ks.test</span>(R[,<span class="dv">1</span>], D[,<span class="dv">1</span>])</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R[, 1] and D[, 1]
+D = 0.092, p-value = 0.02905
+alternative hypothesis: two-sided
+
+
+[[2]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R[, 1] and D[, 1]
+D = 0.22, p-value = 6.182e-11
+alternative hypothesis: two-sided
+
+
+[[3]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R[, 1] and D[, 1]
+D = 0.276, p-value &lt; 2.2e-16
+alternative hypothesis: two-sided</code></pre>
+</div>
+</div>
 </section>
 </section>
 

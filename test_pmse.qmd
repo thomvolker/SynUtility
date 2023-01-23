@@ -17,6 +17,7 @@ library(patchwork)
 library(purrr)
 library(dplyr)
 library(glmnet)
+library(ggplot2)
 ```
 
 
@@ -126,3 +127,51 @@ map2(list(XR3, XR10, XR20),
 ```
 
 According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).
+
+# Other techniques for assessing distributional similarity
+
+## PCA dimension reduction
+
+With Kolmogorov-Smirnov test on the first principal component
+
+```{r}
+map2(list(XR3, XR10, XR20),
+     list(XS3, XS10, XS20),
+     function(real, synthetic) {
+       D <- rbind(real, synthetic) |> scale()
+       USV <- svd(D)
+       D %*% USV$v |>
+         matrix(ncol = ncol(D), dimnames = list(NULL, paste0("Dim", 1:ncol(D)))) |>
+         data.frame() |>
+         mutate(Synthetic = rep(c("Real", "Synthetic"), each = nrow(D)/2)) |>
+         ggplot(aes(Dim1, Dim2, col = Synthetic)) +
+         geom_point() +
+         theme_minimal() +
+         theme(legend.position = "bottom")
+     }) |>
+  patchwork::wrap_plots(ncol = 3)
+
+map2(list(XR3, XR10, XR20),
+     list(XS3, XS10, XS20),
+     function(real, synthetic) {
+       D <- rbind(real, synthetic) |> scale()
+       USV <- svd(D)
+       R <- real %*% USV$v
+       D <- synthetic %*% USV$v
+       ks.test(R[,1], D[,1])
+})
+
+map2(list(XR3, XR10, XR20),
+     list(XS3, XS10, XS20),
+     function(real, synthetic) {
+       D <- rbind(real, synthetic) |> scale()
+       USV <- svd(D)
+       R <- real %*% USV$v
+       D <- synthetic %*% USV$v
+       synthpop::utility.gen(data.frame(R[,1:2]),
+                             data.frame(D[,1:2]),
+                             method = "logit",
+                             max.order = 2)
+})
+```
+
