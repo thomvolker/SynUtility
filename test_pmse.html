@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Thom Benjamin Volker">
-<meta name="dcterms.date" content="2023-01-23">
+<meta name="dcterms.date" content="2023-01-28">
 
 <title>Can the pMSE detect missing relationships between variables?</title>
 <style>
@@ -131,7 +131,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 23, 2023</p>
+      <p class="date">January 28, 2023</p>
     </div>
   </div>
   
@@ -150,7 +150,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glmnet)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lfda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="generate-data" class="level2">
 <h2 class="anchored" data-anchor-id="generate-data">Generate data</h2>
@@ -204,52 +205,56 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>XS20 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(N<span class="sc">*</span>P20) <span class="sc">|&gt;</span> <span class="fu">matrix</span>(N, P20) <span class="sc">%*%</span> <span class="fu">chol</span>(SS20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
+<section id="combine-data-sets" class="level3">
+<h3 class="anchored" data-anchor-id="combine-data-sets">Combine data sets</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>XR <span class="ot">&lt;-</span> <span class="fu">list</span>(XR3, XR10, XR20)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>XS <span class="ot">&lt;-</span> <span class="fu">list</span>(XS3, XS10, XS20)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </section>
 <section id="compare-real-and-synthetic-data" class="level2">
 <h2 class="anchored" data-anchor-id="compare-real-and-synthetic-data">Compare real and synthetic data</h2>
-<div class="cell" data-hash="test_pmse_cache/html/unnamed-chunk-5_bbd6158b8aeaffb5178d48e8a8ef95f9">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>CART <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                 <span class="sc">~</span>synthpop<span class="sc">::</span><span class="fu">utility.gen</span>(<span class="fu">data.frame</span>(.x),</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                                        <span class="fu">data.frame</span>(.y),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">method =</span> <span class="st">"cart"</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">print.flag=</span>F)<span class="sc">$</span>S_pMSE)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>logistic <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                     <span class="sc">~</span>synthpop<span class="sc">::</span><span class="fu">utility.gen</span>(<span class="fu">data.frame</span>(.x),</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                                            <span class="fu">data.frame</span>(.y),</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">method =</span> <span class="st">"logit"</span>,</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">print.flag=</span>F,</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">maxorder =</span> <span class="dv">1</span>)<span class="sc">$</span>S_pMSE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-hash="test_pmse_cache/html/unnamed-chunk-6_1e82630f1e241ae42d06d70b1b963388">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>CART <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(XR, XS,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                 <span class="sc">~</span>synthpop<span class="sc">::</span><span class="fu">utility.gen</span>(<span class="fu">data.frame</span>(.x),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                                        <span class="fu">data.frame</span>(.y),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">method =</span> <span class="st">"cart"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">print.flag=</span>F)<span class="sc">$</span>S_pMSE)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>logistic <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(XR, XS,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                     <span class="sc">~</span>synthpop<span class="sc">::</span><span class="fu">utility.gen</span>(<span class="fu">data.frame</span>(.x),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                                            <span class="fu">data.frame</span>(.y),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">method =</span> <span class="st">"logit"</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">print.flag=</span>F,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">maxorder =</span> <span class="dv">1</span>)<span class="sc">$</span>S_pMSE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>You will be fitting a large model with  211  parameters and only  500  records
 that may take a long time and fail to converge.
 Have you selected variables with vars?</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                  <span class="cf">function</span>(real, synthetic) {</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                    form <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Synthetic ~ .^3 + "</span>, </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">paste0</span>(<span class="st">"I(X"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real), <span class="st">"^2)"</span>, <span class="at">collapse =</span> <span class="st">" + "</span>),</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">" + "</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">paste0</span>(<span class="st">"I(X"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real), <span class="st">"^3)"</span>, <span class="at">collapse =</span> <span class="st">" + "</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                    dat <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="at">Real =</span> <span class="fu">data.frame</span>(real),</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">Synthetic =</span> <span class="fu">data.frame</span>(synthetic),</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">.id =</span> <span class="st">"Synthetic"</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                    X   <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="fu">as.formula</span>(form), dat)[,<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                    Y   <span class="ot">&lt;-</span> <span class="fu">factor</span>(dat<span class="sc">$</span>Synthetic)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                    mod <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                    p   <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod, <span class="at">newx =</span> X, <span class="at">s =</span> mod<span class="sc">$</span>lambda.min, <span class="at">type =</span> <span class="st">"response"</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">mean</span>((p<span class="fl">-0.5</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> ((<span class="fu">ncol</span>(X))<span class="sc">*</span><span class="fl">0.5</span><span class="sc">^</span><span class="dv">3</span><span class="sc">/</span><span class="fu">nrow</span>(X))</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                  })</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">CART =</span> CART,</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">Logistic =</span> logistic,</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>           <span class="at">Lasso =</span> lasso) <span class="sc">|&gt;</span></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lasso <span class="ot">&lt;-</span> <span class="fu">map2_dbl</span>(XR, XS,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                  <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                    form <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"Synthetic ~ .^3 + "</span>, </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">paste0</span>(<span class="st">"I(X"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real), <span class="st">"^2)"</span>, <span class="at">collapse =</span> <span class="st">" + "</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">" + "</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                                   <span class="fu">paste0</span>(<span class="st">"I(X"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real), <span class="st">"^3)"</span>, <span class="at">collapse =</span> <span class="st">" + "</span>))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                    dat <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="at">Real =</span> <span class="fu">data.frame</span>(real),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">Synthetic =</span> <span class="fu">data.frame</span>(synthetic),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">.id =</span> <span class="st">"Synthetic"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                    X   <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="fu">as.formula</span>(form), dat)[,<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                    Y   <span class="ot">&lt;-</span> <span class="fu">factor</span>(dat<span class="sc">$</span>Synthetic)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                    mod <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(<span class="at">x =</span> X, <span class="at">y =</span> Y, <span class="at">alpha =</span> <span class="dv">1</span>, <span class="at">family =</span> <span class="st">"binomial"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                    p   <span class="ot">&lt;-</span> <span class="fu">predict</span>(mod, <span class="at">newx =</span> X, <span class="at">s =</span> mod<span class="sc">$</span>lambda.min, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">mean</span>((p<span class="fl">-0.5</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> ((<span class="fu">ncol</span>(X))<span class="sc">*</span><span class="fl">0.5</span><span class="sc">^</span><span class="dv">3</span><span class="sc">/</span><span class="fu">nrow</span>(X))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                  })</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">CART =</span> CART,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">Logistic =</span> logistic,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>           <span class="at">Lasso =</span> lasso) <span class="sc">|&gt;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"hover"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
@@ -283,9 +288,7 @@ Have you selected variables with vars?</code></pre>
 </div>
 <p>So, we can conclude that the <span class="math inline">\(pMSE\)</span> is not very good at detecting missed relationships between variables, and the problem gets worse when the dimensionality of the data increases. Note that the estimates of the lasso are conservative, as the number of variables in the predictor matrix is chosen to be the number of parameters in the model (and thus shrinkage is not accounted for). Using a (probably) overly optimistic estimate (only the non-zero coefficients), the standardized <span class="math inline">\(pMSE\)</span> would be around <span class="math inline">\(7\)</span>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>     <span class="sc">~</span><span class="fu">utility.tables</span>(<span class="fu">data.frame</span>(.x), <span class="fu">data.frame</span>(.y)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="sc">~</span><span class="fu">utility.tables</span>(<span class="fu">data.frame</span>(.x), <span class="fu">data.frame</span>(.y)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 
@@ -296,7 +299,7 @@ Variable combinations with worst 3 utility scores (S_pMSE):
    7.2140    6.5666    4.5826 </code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="test_pmse_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -317,7 +320,7 @@ Variable combinations with worst 5 utility scores (S_pMSE):
      9.2868      8.7732      8.1683      8.1605      8.0266 </code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="test_pmse_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid" width="672"></p>
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -338,7 +341,7 @@ Variable combinations with worst 5 utility scores (S_pMSE):
       10.5229        9.8592        9.6286        9.1604        8.9764 </code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="test_pmse_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid" width="672"></p>
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-7-3.png" class="img-fluid" width="672"></p>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -360,39 +363,36 @@ For more details of all scores use print.tabs = TRUE.</code></pre>
 <h2 class="anchored" data-anchor-id="pca-dimension-reduction">PCA dimension reduction</h2>
 <p>With Kolmogorov-Smirnov test on the first principal component</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>     <span class="cf">function</span>(real, synthetic) {</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       USV <span class="ot">&lt;-</span> <span class="fu">svd</span>(D)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>       D <span class="sc">%*%</span> USV<span class="sc">$</span>v <span class="sc">|&gt;</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>         <span class="fu">matrix</span>(<span class="at">ncol =</span> <span class="fu">ncol</span>(D), <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="cn">NULL</span>, <span class="fu">paste0</span>(<span class="st">"Dim"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(D)))) <span class="sc">|&gt;</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>         <span class="fu">data.frame</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>         <span class="fu">mutate</span>(<span class="at">Synthetic =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">each =</span> <span class="fu">nrow</span>(D)<span class="sc">/</span><span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>         <span class="fu">ggplot</span>(<span class="fu">aes</span>(Dim1, Dim2, <span class="at">col =</span> Synthetic)) <span class="sc">+</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>         <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>     }) <span class="sc">|&gt;</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">&lt;-</span> <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  X   <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  USV <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  ID  <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">times =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(real), <span class="fu">nrow</span>(synthetic)))</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(X <span class="sc">%*%</span> USV<span class="sc">$</span>v, ID) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"PC"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(USV<span class="sc">$</span>v)), <span class="st">"Synthetic"</span>))</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>       <span class="fu">pca</span>(real, synthetic) <span class="sc">|&gt;</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>         <span class="fu">ggplot</span>(<span class="fu">aes</span>(PC1, PC2, <span class="at">col =</span> Synthetic)) <span class="sc">+</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">theme_minimal</span>()</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>     }) <span class="sc">|&gt;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">guides =</span> <span class="st">"collect"</span>) <span class="sc">&amp;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="test_pmse_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(<span class="fu">list</span>(XR3, XR10, XR20),</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="fu">list</span>(XS3, XS10, XS20),</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>     <span class="cf">function</span>(real, synthetic) {</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>       USV <span class="ot">&lt;-</span> <span class="fu">svd</span>(D)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       R <span class="ot">&lt;-</span> real <span class="sc">%*%</span> USV<span class="sc">$</span>v</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>       D <span class="ot">&lt;-</span> synthetic <span class="sc">%*%</span> USV<span class="sc">$</span>v</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>       <span class="fu">ks.test</span>(R[,<span class="dv">1</span>], D[,<span class="dv">1</span>])</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  D <span class="ot">&lt;-</span> <span class="fu">pca</span>(real, synthetic)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ks.test</span>(D <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(PC1),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>          D <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(PC1))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 
     Asymptotic two-sample Kolmogorov-Smirnov test
 
-data:  R[, 1] and D[, 1]
+data:  pull(filter(D, Synthetic == "Real"), PC1) and pull(filter(D, Synthetic == "Synthetic"), PC1)
 D = 0.092, p-value = 0.02905
 alternative hypothesis: two-sided
 
@@ -401,8 +401,8 @@ alternative hypothesis: two-sided
 
     Asymptotic two-sample Kolmogorov-Smirnov test
 
-data:  R[, 1] and D[, 1]
-D = 0.22, p-value = 6.182e-11
+data:  pull(filter(D, Synthetic == "Real"), PC1) and pull(filter(D, Synthetic == "Synthetic"), PC1)
+D = 0.218, p-value = 9.579e-11
 alternative hypothesis: two-sided
 
 
@@ -410,9 +410,71 @@ alternative hypothesis: two-sided
 
     Asymptotic two-sample Kolmogorov-Smirnov test
 
-data:  R[, 1] and D[, 1]
+data:  pull(filter(D, Synthetic == "Real"), PC1) and pull(filter(D, Synthetic == "Synthetic"), PC1)
 D = 0.276, p-value &lt; 2.2e-16
 alternative hypothesis: two-sided</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  PC <span class="ot">&lt;-</span> <span class="fu">pca</span>(real, synthetic)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  S <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  Synthpop_S_pMSE <span class="ot">&lt;-</span> <span class="fu">utility.gen</span>(R <span class="sc">|&gt;</span> <span class="fu">select</span>(PC1, PC2),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                                 S <span class="sc">|&gt;</span> <span class="fu">select</span>(PC1, PC2),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">method =</span> <span class="st">"logit"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">maxorder =</span> <span class="dv">1</span>)<span class="sc">$</span>S_pMSE</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  S_prop <span class="ot">&lt;-</span> <span class="fu">nrow</span>(S) <span class="sc">/</span> <span class="fu">nrow</span>(PC)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  n_pMSE <span class="ot">&lt;-</span> <span class="dv">5</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> S_prop)<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> S_prop <span class="sc">/</span> <span class="fu">nrow</span>(PC)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  Manual_S_pMSE <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(PC1, PC2, Synthetic) <span class="sc">|&gt;</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glm</span>(<span class="at">formula =</span> <span class="fu">factor</span>(Synthetic) <span class="sc">~</span> PC1 <span class="sc">+</span> PC2 <span class="sc">+</span> PC1<span class="sc">:</span>PC2 <span class="sc">+</span> <span class="fu">I</span>(PC1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(PC2<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">family =</span> binomial) <span class="sc">|&gt;</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">predict</span>(<span class="at">type =</span> <span class="st">"response"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    {\(x) <span class="fu">mean</span>((x<span class="sc">-</span>S_prop)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> n_pMSE}()</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="at">Synthpop =</span> Synthpop_S_pMSE,</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">Manual =</span> Manual_S_pMSE)</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+ Synthpop    Manual 
+ 5.026017 38.050036 
+
+[[2]]
+   Synthpop      Manual 
+  0.2247709 108.9874558 
+
+[[3]]
+   Synthpop      Manual 
+  0.6108608 145.3904673 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>PC <span class="ot">&lt;-</span> <span class="fu">pca</span>(XR10, XS10)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>S <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We see a clear discrepancy between the real and synthetic data in the figure, that is also reflected in the discrepancy score of the Kolmogorov-Smirnov test, but not in the logistic regression model (admittedly with only first order interaction terms and without squared terms, because that is not allowed by the software). If we include these terms, we find a very large standardized <span class="math inline">\(pMSE\)</span> value.</p>
+<p>Of course, this finding makes sense, as we see that values that score high on the first principal component (in an absolute sense, so the values in the tails of the distribution) are more likely to be “real” values, whereas values that score high on the second principal component (in an absolute sense, again the values in the tails of the distribution) are much more likely to be synthetic records. However, this will only show up when considering the squared (or absolute) terms, because the centers of the distribution are at the same location for the real and synthetic data.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">times =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(real), <span class="fu">nrow</span>(synthetic)))</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  Z <span class="ot">&lt;-</span> <span class="fu">lfda</span>(X, Y, <span class="at">r =</span> <span class="fu">ncol</span>(X), <span class="at">metric =</span> <span class="st">"orthonormalized"</span>)<span class="sc">$</span>Z <span class="sc">|&gt;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"D"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real)))</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  Z <span class="sc">|&gt;</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> D1, <span class="at">y =</span> D2, <span class="at">col =</span> Y)) <span class="sc">+</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">&amp;</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>

@@ -18,6 +18,7 @@ library(purrr)
 library(dplyr)
 library(glmnet)
 library(ggplot2)
+library(lfda)
 ```
 
 
@@ -73,29 +74,34 @@ XR20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SR20)
 XS20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SS20)
 ```
 
+### Combine data sets
+
+```{r}
+XR <- list(XR3, XR10, XR20)
+XS <- list(XS3, XS10, XS20)
+```
+
+
 ## Compare real and synthetic data
 
 ```{r}
 #| cache: true
 #| message: false
-CART <- map2_dbl(list(XR3, XR10, XR20),
-                 list(XS3, XS10, XS20),
+CART <- map2_dbl(XR, XS,
                  ~synthpop::utility.gen(data.frame(.x),
                                         data.frame(.y),
                                         method = "cart",
                                         print.flag=F)$S_pMSE)
 
 
-logistic <- map2_dbl(list(XR3, XR10, XR20),
-                     list(XS3, XS10, XS20),
+logistic <- map2_dbl(XR, XS,
                      ~synthpop::utility.gen(data.frame(.x),
                                             data.frame(.y),
                                             method = "logit",
                                             print.flag=F,
                                             maxorder = 1)$S_pMSE)
 
-lasso <- map2_dbl(list(XR3, XR10, XR20),
-                  list(XS3, XS10, XS20),
+lasso <- map2_dbl(XR, XS,
                   function(real, synthetic) {
                     form <- paste0("Synthetic ~ .^3 + ", 
                                    paste0("I(X", 1:ncol(real), "^2)", collapse = " + "),
@@ -121,9 +127,7 @@ data.frame(CART = CART,
 So, we can conclude that the $pMSE$ is not very good at detecting missed relationships between variables, and the problem gets worse when the dimensionality of the data increases. Note that the estimates of the lasso are conservative, as the number of variables in the predictor matrix is chosen to be the number of parameters in the model (and thus shrinkage is not accounted for). Using a (probably) overly optimistic estimate (only the non-zero coefficients), the standardized $pMSE$ would be around $7$.
 
 ```{r}
-map2(list(XR3, XR10, XR20),
-     list(XS3, XS10, XS20),
-     ~utility.tables(data.frame(.x), data.frame(.y)))
+map2(XR, XS, ~utility.tables(data.frame(.x), data.frame(.y)))
 ```
 
 According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).
@@ -135,43 +139,80 @@ According to the figures, the same findings hold for two-way assessments of util
 With Kolmogorov-Smirnov test on the first principal component
 
 ```{r}
-map2(list(XR3, XR10, XR20),
-     list(XS3, XS10, XS20),
-     function(real, synthetic) {
-       D <- rbind(real, synthetic) |> scale()
-       USV <- svd(D)
-       D %*% USV$v |>
-         matrix(ncol = ncol(D), dimnames = list(NULL, paste0("Dim", 1:ncol(D)))) |>
-         data.frame() |>
-         mutate(Synthetic = rep(c("Real", "Synthetic"), each = nrow(D)/2)) |>
-         ggplot(aes(Dim1, Dim2, col = Synthetic)) +
+pca <- function(real, synthetic) {
+  X   <- rbind(real, synthetic) |> scale()
+  USV <- svd(X)
+  ID  <- rep(c("Real", "Synthetic"), times = c(nrow(real), nrow(synthetic)))
+  data.frame(X %*% USV$v, ID) |>
+    setNames(c(paste0("PC", 1:ncol(USV$v)), "Synthetic"))
+}
+
+map2(XR, XS, function(real, synthetic) {
+       pca(real, synthetic) |>
+         ggplot(aes(PC1, PC2, col = Synthetic)) +
          geom_point() +
-         theme_minimal() +
-         theme(legend.position = "bottom")
+         theme_minimal()
      }) |>
-  patchwork::wrap_plots(ncol = 3)
+  patchwork::wrap_plots(ncol = 3, guides = "collect") &
+  theme(legend.position = "bottom")
 
-map2(list(XR3, XR10, XR20),
-     list(XS3, XS10, XS20),
-     function(real, synthetic) {
-       D <- rbind(real, synthetic) |> scale()
-       USV <- svd(D)
-       R <- real %*% USV$v
-       D <- synthetic %*% USV$v
-       ks.test(R[,1], D[,1])
+map2(XR, XS, function(real, synthetic) {
+  D <- pca(real, synthetic)
+  ks.test(D |> filter(Synthetic == "Real") |> pull(PC1),
+          D |> filter(Synthetic == "Synthetic") |> pull(PC1))
 })
 
-map2(list(XR3, XR10, XR20),
-     list(XS3, XS10, XS20),
-     function(real, synthetic) {
-       D <- rbind(real, synthetic) |> scale()
-       USV <- svd(D)
-       R <- real %*% USV$v
-       D <- synthetic %*% USV$v
-       synthpop::utility.gen(data.frame(R[,1:2]),
-                             data.frame(D[,1:2]),
-                             method = "logit",
-                             max.order = 2)
+
+
+map2(XR, XS, function(real, synthetic) {
+  PC <- pca(real, synthetic)
+  R <- PC |> filter(Synthetic == "Real")
+  S <- PC |> filter(Synthetic == "Synthetic")
+  
+  Synthpop_S_pMSE <- utility.gen(R |> select(PC1, PC2),
+                                 S |> select(PC1, PC2),
+                                 method = "logit",
+                                 maxorder = 1)$S_pMSE
+  
+  S_prop <- nrow(S) / nrow(PC)
+  n_pMSE <- 5 * (1 - S_prop)^2 * S_prop / nrow(PC)
+  Manual_S_pMSE <- PC |>
+    select(PC1, PC2, Synthetic) |>
+    glm(formula = factor(Synthetic) ~ PC1 + PC2 + PC1:PC2 + I(PC1^2) + I(PC2^2),
+        family = binomial) |>
+    predict(type = "response") |>
+    {\(x) mean((x-S_prop)^2) / n_pMSE}()
+  
+  c(Synthpop = Synthpop_S_pMSE,
+    Manual = Manual_S_pMSE)
 })
+
+PC <- pca(XR10, XS10)
+R <- PC |> filter(Synthetic == "Real")
+S <- PC |> filter(Synthetic == "Synthetic")
+
+
+```
+
+We see a clear discrepancy between the real and synthetic data in the figure, that is also reflected in the discrepancy score of the Kolmogorov-Smirnov test, but not in the logistic regression model (admittedly with only first order interaction terms and without squared terms, because that is not allowed by the software). If we include these terms, we find a very large standardized $pMSE$ value.
+
+Of course, this finding makes sense, as we see that values that score high on the first principal component (in an absolute sense, so the values in the tails of the distribution) are more likely to be "real" values, whereas values that score high on the second principal component (in an absolute sense, again the values in the tails of the distribution) are much more likely to be synthetic records. However, this will only show up when considering the squared (or absolute) terms, because the centers of the distribution are at the same location for the real and synthetic data.
+
+
+```{r}
+map2(XR, XS, function(real, synthetic) {
+  X <- rbind(real, synthetic)
+  Y <- rep(c("Real", "Synthetic"), times = c(nrow(real), nrow(synthetic)))
+  Z <- lfda(X, Y, r = ncol(X), metric = "orthonormalized")$Z |>
+    data.frame() |>
+    setNames(paste0("D", 1:ncol(real)))
+  
+  Z |>
+    ggplot(aes(x = D1, y = D2, col = Y)) +
+    geom_point(alpha = 0.5) +
+    theme_minimal()
+}) |>
+  patchwork::wrap_plots(ncol = 3, guides = 'collect') &
+  theme(legend.position = "bottom")
 ```
 
