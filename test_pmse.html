@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Thom Benjamin Volker">
-<meta name="dcterms.date" content="2023-01-28">
+<meta name="dcterms.date" content="2023-02-05">
 
 <title>Can the pMSE detect missing relationships between variables?</title>
 <style>
@@ -131,7 +131,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 28, 2023</p>
+      <p class="date">February 5, 2023</p>
     </div>
   </div>
   
@@ -141,7 +141,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<p>The answer is “No; at least it’s not very good”.</p>
+<p>The answer is: Yes, but only if the <span class="math inline">\(pMSE\)</span> model is well-specified, which increases the burden on behalf of the user.</p>
 <section id="properties-pmse-for-cart-logistic-regression-and-lasso-regression" class="level1">
 <h1>Properties <span class="math inline">\(pMSE\)</span> for CART, logistic regression and lasso regression</h1>
 <div class="cell">
@@ -357,11 +357,13 @@ For more details of all scores use print.tabs = TRUE.</code></pre>
 <p>According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).</p>
 </section>
 </section>
-<section id="other-techniques-for-assessing-distributional-similarity" class="level1">
-<h1>Other techniques for assessing distributional similarity</h1>
-<section id="pca-dimension-reduction" class="level2">
-<h2 class="anchored" data-anchor-id="pca-dimension-reduction">PCA dimension reduction</h2>
-<p>With Kolmogorov-Smirnov test on the first principal component</p>
+<section id="distributional-similarity-after-dimension-reduction" class="level1">
+<h1>Distributional similarity after dimension reduction</h1>
+<section id="principal-component-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="principal-component-analysis">Principal component analysis</h2>
+<section id="kolmogorov-smirnov-test-after-pca" class="level3">
+<h3 class="anchored" data-anchor-id="kolmogorov-smirnov-test-after-pca">Kolmogorov-Smirnov test after PCA</h3>
+<p>Using the Kolmogorov-Smirnov test, we assess the distributional similarity of the real and synthetic data on the first principal component.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">&lt;-</span> <span class="cf">function</span>(real, synthetic) {</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  X   <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic) <span class="sc">|&gt;</span> <span class="fu">scale</span>()</span>
@@ -414,6 +416,12 @@ data:  pull(filter(D, Synthetic == "Real"), PC1) and pull(filter(D, Synthetic ==
 D = 0.276, p-value &lt; 2.2e-16
 alternative hypothesis: two-sided</code></pre>
 </div>
+</div>
+</section>
+<section id="pmse-after-pca" class="level3">
+<h3 class="anchored" data-anchor-id="pmse-after-pca"><span class="math inline">\(pMSE\)</span> after PCA</h3>
+<p>A similar result can be obtained by calculating the <span class="math inline">\(pMSE\)</span> using the first-order interactions (including squared terms) for the first two principal components. A similar result here implies a <span class="math inline">\(pMSE\)</span> that also indicates model misfit.</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  PC <span class="ot">&lt;-</span> <span class="fu">pca</span>(real, synthetic)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>)</span>
@@ -452,32 +460,128 @@ alternative hypothesis: two-sided</code></pre>
    Synthpop      Manual 
   0.6108608 145.3904673 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>PC <span class="ot">&lt;-</span> <span class="fu">pca</span>(XR10, XS10)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>R <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>)</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>S <span class="ot">&lt;-</span> PC <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We see a clear discrepancy between the real and synthetic data in the figure, that is also reflected in the discrepancy score of the Kolmogorov-Smirnov test, but not in the logistic regression model (admittedly with only first order interaction terms and without squared terms, because that is not allowed by the software). If we include these terms, we find a very large standardized <span class="math inline">\(pMSE\)</span> value.</p>
 <p>Of course, this finding makes sense, as we see that values that score high on the first principal component (in an absolute sense, so the values in the tails of the distribution) are more likely to be “real” values, whereas values that score high on the second principal component (in an absolute sense, again the values in the tails of the distribution) are much more likely to be synthetic records. However, this will only show up when considering the squared (or absolute) terms, because the centers of the distribution are at the same location for the real and synthetic data.</p>
+</section>
+</section>
+<section id="local-fisher-discriminant-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="local-fisher-discriminant-analysis">Local Fisher discriminant analysis</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">times =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(real), <span class="fu">nrow</span>(synthetic)))</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  Z <span class="ot">&lt;-</span> <span class="fu">lfda</span>(X, Y, <span class="at">r =</span> <span class="fu">ncol</span>(X), <span class="at">metric =</span> <span class="st">"orthonormalized"</span>)<span class="sc">$</span>Z <span class="sc">|&gt;</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"D"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real)))</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  Z <span class="sc">|&gt;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> D1, <span class="at">y =</span> D2, <span class="at">col =</span> Y)) <span class="sc">+</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">&amp;</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="test_pmse_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>First, note that in this situation LFDA gives a result that is highly similar to the result obtained with PCA. That is, the first two components (or dimensions) separate the observed and synthetic samples quite clearly.</p>
+<section id="kolmogorov-smirnov-test-after-lfda" class="level3">
+<h3 class="anchored" data-anchor-id="kolmogorov-smirnov-test-after-lfda">Kolmogorov-Smirnov test after LFDA</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>out_lfda <span class="ot">&lt;-</span> <span class="fu">map2</span>(XR, XS, <span class="cf">function</span>(real, synthetic) {</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">rbind</span>(real, synthetic)</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Real"</span>, <span class="st">"Synthetic"</span>), <span class="at">times =</span> <span class="fu">c</span>(<span class="fu">nrow</span>(real), <span class="fu">nrow</span>(synthetic)))</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  Z <span class="ot">&lt;-</span> <span class="fu">lfda</span>(X, Y, <span class="at">r =</span> <span class="fu">ncol</span>(X), <span class="at">metric =</span> <span class="st">"orthonormalized"</span>)<span class="sc">$</span>Z <span class="sc">|&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lfda</span>(X, Y, <span class="at">r =</span> <span class="fu">ncol</span>(X), <span class="at">metric =</span> <span class="st">"orthonormalized"</span>)<span class="sc">$</span>Z <span class="sc">|&gt;</span></span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">data.frame</span>() <span class="sc">|&gt;</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"D"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(real)))</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  Z <span class="sc">|&gt;</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> D1, <span class="at">y =</span> D2, <span class="at">col =</span> Y)) <span class="sc">+</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  patchwork<span class="sc">::</span><span class="fu">wrap_plots</span>(<span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">guides =</span> <span class="st">'collect'</span>) <span class="sc">&amp;</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<p><img src="test_pmse_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setNames</span>(<span class="fu">paste0</span>(<span class="st">"D"</span>, <span class="dv">1</span><span class="sc">:</span><span class="fu">ncol</span>(X))) <span class="sc">|&gt;</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">Synthetic =</span> <span class="fu">factor</span>(Y))</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(out_lfda, <span class="cf">function</span>(x) {</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(D1)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  S <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(D1)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ks.test</span>(R, S)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R and S
+D = 0.086, p-value = 0.04955
+alternative hypothesis: two-sided
+
+
+[[2]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R and S
+D = 0.224, p-value = 2.544e-11
+alternative hypothesis: two-sided
+
+
+[[3]]
+
+    Asymptotic two-sample Kolmogorov-Smirnov test
+
+data:  R and S
+D = 0.276, p-value &lt; 2.2e-16
+alternative hypothesis: two-sided</code></pre>
 </div>
 </div>
+<p>The result is very similar to the result of the K-S test after PCA, that is, there is quite a mismatch between the real and synthetic data.</p>
 </section>
+<section id="pmse-after-lfda" class="level3">
+<h3 class="anchored" data-anchor-id="pmse-after-lfda"><span class="math inline">\(pMSE\)</span> after LFDA</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(out_lfda, <span class="cf">function</span>(x) {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  R <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Real"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(D1, D2)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  S <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span> <span class="fu">filter</span>(Synthetic <span class="sc">==</span> <span class="st">"Synthetic"</span>) <span class="sc">|&gt;</span> <span class="fu">select</span>(D1, D2)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  Synthpop_S_pMSE <span class="ot">&lt;-</span> <span class="fu">utility.gen</span>(R, S,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">method =</span> <span class="st">"logit"</span>,</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">maxorder =</span> <span class="dv">1</span>)<span class="sc">$</span>S_pMSE</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  S_prop <span class="ot">&lt;-</span> <span class="fu">nrow</span>(S) <span class="sc">/</span> (<span class="fu">nrow</span>(S) <span class="sc">+</span> <span class="fu">nrow</span>(R))</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  n_pMSE <span class="ot">&lt;-</span> <span class="dv">5</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> S_prop)<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> S_prop <span class="sc">/</span> (<span class="fu">nrow</span>(S) <span class="sc">+</span> <span class="fu">nrow</span>(R))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  Manual_S_pMSE <span class="ot">&lt;-</span> x <span class="sc">|&gt;</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(D1, D2, Synthetic) <span class="sc">|&gt;</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glm</span>(<span class="at">formula =</span> <span class="fu">factor</span>(Synthetic) <span class="sc">~</span> D1 <span class="sc">+</span> D2 <span class="sc">+</span> D1<span class="sc">:</span>D2 <span class="sc">+</span> <span class="fu">I</span>(D1<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(D2<span class="sc">^</span><span class="dv">2</span>),</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">family =</span> binomial) <span class="sc">|&gt;</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">predict</span>(<span class="at">type =</span> <span class="st">"response"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>    {\(x) <span class="fu">mean</span>((x<span class="sc">-</span>S_prop)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> n_pMSE}()</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="at">Synthpop =</span> Synthpop_S_pMSE,</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">Manual =</span> Manual_S_pMSE)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+ Synthpop    Manual 
+ 5.853248 38.788739 
+
+[[2]]
+   Synthpop      Manual 
+  0.1588704 110.7553509 
+
+[[3]]
+  Synthpop     Manual 
+  1.335168 143.338559 </code></pre>
+</div>
+</div>
+<p>A similar result holds after calculating the <span class="math inline">\(pMSE\)</span> with all first-order interactions (including squared terms), there is a mismatch between the real and synthetic data. However, this mismatch shows up only after specifying the <span class="math inline">\(pMSE\)</span> model, which is sensitive to its specification.</p>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>If the <span class="math inline">\(pMSE\)</span> model is correctly specified (i.e., when the model is specified such that the discrepancies between the real and synthetic data can be modeled as conditional mean differences), the <span class="math inline">\(pMSE\)</span> works adequately. However, it can be hard to specify this model, and it is certainly an ad hoc measure. Moreover, a non-parametric <code>CART</code> model is also not very good at picking up such discrepancies, leaving it a labor-intensive task to come up with a good evaluation model.</p>
+<p>In these instances, the Kolmogorov-Smirnov test provided an easy-to-use alternative that requires little specification, but depends on correctly reducing the dimensionality of the problem in such a way that the two data sets are maximally different on one component. Preferably, this single component is the first component, to only having to test the first component, rather than all <span class="math inline">\(p\)</span> components.</p>
 </section>
 
 </main>

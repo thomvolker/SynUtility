@@ -5,7 +5,7 @@ date: last-modified
 author: Thom Benjamin Volker
 ---
 
-The answer is "No; at least it's not very good".
+The answer is: Yes, but only if the $pMSE$ model is well-specified, which increases the burden on behalf of the user. 
 
 # Properties $pMSE$ for CART, logistic regression and lasso regression
 
@@ -132,11 +132,13 @@ map2(XR, XS, ~utility.tables(data.frame(.x), data.frame(.y)))
 
 According to the figures, the same findings hold for two-way assessments of utility (i.e., for pairs of variables).
 
-# Other techniques for assessing distributional similarity
+# Distributional similarity after dimension reduction
 
-## PCA dimension reduction
+## Principal component analysis
 
-With Kolmogorov-Smirnov test on the first principal component
+### Kolmogorov-Smirnov test after PCA
+
+Using the Kolmogorov-Smirnov test, we assess the distributional similarity of the real and synthetic data on the first principal component. 
 
 ```{r}
 pca <- function(real, synthetic) {
@@ -161,9 +163,15 @@ map2(XR, XS, function(real, synthetic) {
   ks.test(D |> filter(Synthetic == "Real") |> pull(PC1),
           D |> filter(Synthetic == "Synthetic") |> pull(PC1))
 })
+```
 
 
+### $pMSE$ after PCA
 
+A similar result can be obtained by calculating the $pMSE$ using the first-order interactions (including squared terms) for the first two principal components. A similar result here implies a $pMSE$ that also indicates model misfit.
+
+
+```{r}
 map2(XR, XS, function(real, synthetic) {
   PC <- pca(real, synthetic)
   R <- PC |> filter(Synthetic == "Real")
@@ -187,17 +195,14 @@ map2(XR, XS, function(real, synthetic) {
     Manual = Manual_S_pMSE)
 })
 
-PC <- pca(XR10, XS10)
-R <- PC |> filter(Synthetic == "Real")
-S <- PC |> filter(Synthetic == "Synthetic")
-
-
 ```
 
 We see a clear discrepancy between the real and synthetic data in the figure, that is also reflected in the discrepancy score of the Kolmogorov-Smirnov test, but not in the logistic regression model (admittedly with only first order interaction terms and without squared terms, because that is not allowed by the software). If we include these terms, we find a very large standardized $pMSE$ value.
 
 Of course, this finding makes sense, as we see that values that score high on the first principal component (in an absolute sense, so the values in the tails of the distribution) are more likely to be "real" values, whereas values that score high on the second principal component (in an absolute sense, again the values in the tails of the distribution) are much more likely to be synthetic records. However, this will only show up when considering the squared (or absolute) terms, because the centers of the distribution are at the same location for the real and synthetic data.
 
+
+## Local Fisher discriminant analysis
 
 ```{r}
 map2(XR, XS, function(real, synthetic) {
@@ -216,3 +221,58 @@ map2(XR, XS, function(real, synthetic) {
   theme(legend.position = "bottom")
 ```
 
+First, note that in this situation LFDA gives a result that is highly similar to the result obtained with PCA. That is, the first two components (or dimensions) separate the observed and synthetic samples quite clearly.
+
+### Kolmogorov-Smirnov test after LFDA
+
+```{r}
+out_lfda <- map2(XR, XS, function(real, synthetic) {
+  X <- rbind(real, synthetic)
+  Y <- rep(c("Real", "Synthetic"), times = c(nrow(real), nrow(synthetic)))
+  lfda(X, Y, r = ncol(X), metric = "orthonormalized")$Z |>
+    data.frame() |>
+    setNames(paste0("D", 1:ncol(X))) |>
+    mutate(Synthetic = factor(Y))
+})
+
+map(out_lfda, function(x) {
+  R <- x |> filter(Synthetic == "Real") |> pull(D1)
+  S <- x |> filter(Synthetic == "Synthetic") |> pull(D1)
+  ks.test(R, S)
+})
+```
+
+The result is very similar to the result of the K-S test after PCA, that is, there is quite a mismatch between the real and synthetic data. 
+
+### $pMSE$ after LFDA
+
+```{r}
+map(out_lfda, function(x) {
+  R <- x |> filter(Synthetic == "Real") |> select(D1, D2)
+  S <- x |> filter(Synthetic == "Synthetic") |> select(D1, D2)
+  
+  Synthpop_S_pMSE <- utility.gen(R, S,
+                                 method = "logit",
+                                 maxorder = 1)$S_pMSE
+  
+  S_prop <- nrow(S) / (nrow(S) + nrow(R))
+  n_pMSE <- 5 * (1 - S_prop)^2 * S_prop / (nrow(S) + nrow(R))
+  Manual_S_pMSE <- x |>
+    select(D1, D2, Synthetic) |>
+    glm(formula = factor(Synthetic) ~ D1 + D2 + D1:D2 + I(D1^2) + I(D2^2),
+        family = binomial) |>
+    predict(type = "response") |>
+    {\(x) mean((x-S_prop)^2) / n_pMSE}()
+  
+  c(Synthpop = Synthpop_S_pMSE,
+    Manual = Manual_S_pMSE)
+})
+``` 
+
+A similar result holds after calculating the $pMSE$ with all first-order interactions (including squared terms), there is a mismatch between the real and synthetic data. However, this mismatch shows up only after specifying the $pMSE$ model, which is sensitive to its specification. 
+
+# Conclusion 
+
+If the $pMSE$ model is correctly specified (i.e., when the model is specified such that the discrepancies between the real and synthetic data can be modeled as conditional mean differences), the $pMSE$ works adequately. However, it can be hard to specify this model, and it is certainly an ad hoc measure. Moreover, a non-parametric `CART` model is also not very good at picking up such discrepancies, leaving it a labor-intensive task to come up with a good evaluation model. 
+
+In these instances, the Kolmogorov-Smirnov test provided an easy-to-use alternative that requires little specification, but depends on correctly reducing the dimensionality of the problem in such a way that the two data sets are maximally different on one component. Preferably, this single component is the first component, to only having to test the first component, rather than all $p$ components. 
