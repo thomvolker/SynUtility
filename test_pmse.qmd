@@ -5,7 +5,7 @@ date: last-modified
 author: Thom Benjamin Volker
 ---
 
-The answer is: Yes, but only if the $pMSE$ model is well-specified, which increases the burden on behalf of the user. 
+The answer is: Yes, but only after dimension reduction, and if the $pMSE$ model is well-specified, which increases the burden on behalf of the user. 
 
 # Properties $pMSE$ for CART, logistic regression and lasso regression
 
