@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>OUTLINE: Density ratio estimation as a technique for assessing the utility of synthetic data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="outline_syn_utility_files/libs/clipboard/clipboard.min.js"></script>
+<script src="outline_syn_utility_files/libs/quarto-html/quarto.js"></script>
+<script src="outline_syn_utility_files/libs/quarto-html/popper.min.js"></script>
+<script src="outline_syn_utility_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="outline_syn_utility_files/libs/quarto-html/anchor.min.js"></script>
+<link href="outline_syn_utility_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="outline_syn_utility_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="outline_syn_utility_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="outline_syn_utility_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="outline_syn_utility_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">OUTLINE: Density ratio estimation as a technique for assessing the utility of synthetic data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="target-outlet" class="level1">
+<h1>Target outlet</h1>
+<ul>
+<li><a href="https://journalprivacyconfidentiality.org/index.php/jpc">JPC</a></li>
+<li><a href="https://sciendo.com/journal/JOS">JOS</a></li>
+<li><a href="https://rss.onlinelibrary.wiley.com/journal/1467985x">JRSSA</a></li>
+</ul>
+</section>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p><strong>Section 1: relevance</strong></p>
+<p>Openly accessible research data can accelerate scientific progress tremendously, by allowing a wide audience of researchers to evaluate their theories and validate existing ones. Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science. In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data. In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science <span class="citation" data-cites="lazer_css_2009">(<a href="#ref-lazer_css_2009" role="doc-biblioref">Lazer et al. 2009</a>)</span>, and among top reasons for companies to not share their data with researchers <span class="citation" data-cites="fpf_2017">(<a href="#ref-fpf_2017" role="doc-biblioref">Future of Privacy Forum 2017</a>)</span>. To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. In principle, all of these techniques alter the data, and limit its quality to some extent. That is, all disclosure limitation techniques reduce the amount of information in the data to protect the privacy of the individuals in the data. The million-dollar question is how useful the altered data is relative to the original.</p>
+<p>Privacy preservation</p>
+<p>Synthetic data</p>
+<p>Assessment of utility is of utmost importance</p>
+<ol type="1">
+<li><p>Utility measures can guide finetuning the synthesis models</p></li>
+<li><p>Data users want to know what the synthetic data can and can’t be used for</p></li>
+</ol>
+<p><strong>Section 2: problem</strong></p>
+<p>Measuring utility is hard.</p>
+<p>Specific utility measures vs.&nbsp;general utility measures</p>
+<ol type="1">
+<li><p>Applying specific utility measures can be hard, as data disseminators generally do not know which analyses will be performed with the data</p></li>
+<li><p>Specific utility measures tend to be too narrow: high utility on one reconstructed analysis may say close to nothing about another analysis</p></li>
+<li><p>Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses.</p></li>
+<li><p>Global utility measures are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.</p></li>
+</ol>
+<p><strong>Section 3: current state of the field</strong> (maybe switch 2&amp;3)</p>
+<p>Current state of the literature</p>
+<p>Ways to assess specific utility (confidence interval overlap; ellipsoidal (i.e., multivariate posterior distribution) overlap; univariate data visualizations)</p>
+<p>Ways to assess general utility</p>
+<ol type="1">
+<li><p><span class="math inline">\(pMSE\)</span> (explain, then problem: which model to use; results can vary depending on the model that is used to evaluate the synthetic data)</p></li>
+<li><p>Kullback-Leibler divergence (only suitable for normally distributed data).</p></li>
+</ol>
+<p><strong>Section 4: our contribution</strong></p>
+<ol type="1">
+<li>Introduce density ratio methods to compare densities of observed and synthetic sets.</li>
+</ol>
+<ul>
+<li>Maybe also incorporate something about density estimation methods (Wasserman; I have to read more about this first)</li>
+</ul>
+<ol start="2" type="1">
+<li><p>Bridge the gap between specific and general utility measures, by using dimension reduction techniques to visualize the discrepancies between the observed and synthetic data.</p></li>
+<li><p>Perform a simulation study to give indications about which methods to use (think about how to do this).</p></li>
+<li><p>Implement all this in an R-package</p></li>
+</ol>
+<p><strong>Section 5: outline article</strong></p>
+</section>
+<section id="methodology" class="level1">
+<h1>Methodology</h1>
+<p><strong>Section 1: density estimation</strong></p>
+<p>Decide on whether density estimation will be included.</p>
+<p><strong>Section 2: density ratio estimation</strong></p>
+<p>Apparently this is easier than density estimation.</p>
+<p>Check section 10.2 in density ratio estimation in machine learning. Two-sample test/homogeneity test (Kullback, 1959): test whether probability distributions be behind two sets of samples are equivalent.</p>
+<p>“A standard approach to the two-sample test is to estimate a divergence between two probability distributions (Keziou &amp; Leoni-Aubin, 2005; Kanamori et al., 2011a). A key observation is that a general class of divergences (Ali &amp; Silvey, 1966; Csiszár, 1967), including the Kullback-Leibler divergene (Kullback &amp; Leibler, 1951) and the Pearson divergence (Pearson 1900) can be approximated accurately via density-ratio estimation (Nguyen et al., 2010; Sugiyama et al., 2011c), resulting in better test accuracy than estimating the distributions separately.”</p>
+<p><strong>Section 3: theoretical comparison with conventional approaches for general utility assessment</strong></p>
+<p>Shortly detail <span class="math inline">\(pMSE\)</span> and eventually Kullback-Leibler divergence.</p>
+<p>Explain in what sense the approaches we introduce are different.</p>
+<p><strong>Section 4: Dimension reduction for visualizations</strong></p>
+<p>Explain techniques in more detail (maybe start from PCA; go to UMAP/other advanced techniques).</p>
+<p>How does this follow from density estimation?</p>
+</section>
+<section id="simulations" class="level1">
+<h1>Simulations</h1>
+<ol type="1">
+<li><p>Simple, multivariate normal simulation (e.g., two correlation structures, two sample sizes, so <span class="math inline">\(2 \times 2\)</span> full factorial design)</p></li>
+<li><p>More advanced simulation (e.g., some non-linearities, different sample sizes)</p></li>
+</ol>
+<p>Have to think about this in more detail still.</p>
+</section>
+<section id="real-data-example" class="level1">
+<h1>Real data example</h1>
+<p>Clinical records heart-failure data?</p>
+<p>Current ways to assess the utility?</p>
+<ul>
+<li><p>pMSE - logistic, regression, CART models (Snoke, Raab, Nowok, Dibben &amp; Slavkovic, 2018; General and specific utility measures for synthetic data AND Woo, Reiter, Oganian &amp; Karr, 2009; Global measures of data utlity for microdata masked for disclosure limitation)</p></li>
+<li><p>Kullback-Leiber divergence (Karr, Kohnen, Oganian, Reiter &amp; Sanil, 2006; A framework for evaluating the utility of data altered to protect confidentiality).</p></li>
+<li><p>According to multiple authors, both specific and general utility measures have important drawbacks (see Drechsler Utility PSD; cites others). Narrow measures potentially focus on analyses that are not relevant for the end user, and do not generalize to the analyses that are relevant. Global utility measures are generally too broad, and important deviations in the synthetic data might be missed. Moreover, the measures are typically hard to interpret.</p></li>
+<li><p>See Drechsler for a paragraph on fit for purpose measures, that lie between general and specific utility measures (i.e., plausibility checks such as non-negativity; goodness of fit measures as <span class="math inline">\(\chi^2\)</span> for cross-tabulations; Kolmogorov-Smirnov).</p></li>
+<li><p>Drechsler also illustrates that the standardized <span class="math inline">\(pMSE\)</span> has substantial flaws, as the results are highly dependent on the model used to estimate the propensity scores, and unable to detect important differences in the utility for most of the model specifications. Hence, it is claimed that a thorough assessment of utility is required.</p></li>
+</ul>
+</section>
+<section id="methodology-1" class="level1">
+<h1>Methodology</h1>
+<p>TO DO</p>
+</section>
+<section id="simulations-1" class="level1">
+<h1>Simulations</h1>
+<p>TO DO</p>
+</section>
+<section id="real-data-example-1" class="level1">
+<h1>Real data example</h1>
+<p>TO DO</p>
+</section>
+<section id="results" class="level1">
+<h1>Results</h1>
+<p>TO DO</p>
+</section>
+<section id="discussion-and-conclusion" class="level1">
+<h1>Discussion and conclusion</h1>
+<p>TO DO</p>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-fpf_2017" class="csl-entry" role="doc-biblioentry">
+Future of Privacy Forum. 2017. <span>“Understanding Corporate Data Sharing Decisions: Practices, Challenges, and Opportunities for Sharing Corporate Data with Researchers.”</span>
+</div>
+<div id="ref-lazer_css_2009" class="csl-entry" role="doc-biblioentry">
+Lazer, David, Alex Pentland, Lada Adamic, Sinan Aral, Albert-László Barabási, Devon Brewer, Nicholas Christakis, et al. 2009. <span>“Computational Social Science.”</span> <em>Science</em> 323 (5915): 721–23. <a href="https://doi.org/10.1126/science.1167742">https://doi.org/10.1126/science.1167742</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
