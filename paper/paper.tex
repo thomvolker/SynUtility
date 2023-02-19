@@ -1,0 +1,165 @@
+
+\documentclass{statsoc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{amssymb, amsmath, geometry}
+\usepackage{natbib}
+\usepackage{hyperref}
+
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+
+\title[Density ratio estimation for synthetic data]{OUTLINE: Density
+ratio estimation as a technique for assessing the utility of synthetic
+data}
+
+
+
+
+ 
+\author[Volker \& Van Kesteren]{Thom Benjamin Volker}
+\address{Utrecht University,
+Utrecht,
+The Netherlands}
+\email{t.b.volker@uu.nl}
+
+ 
+\author[Volker \& Van Kesteren]{Erik-Jan van Kesteren}
+\address{Utrecht University,
+Utrecht,
+The Netherlands}
+\email{e.vankesteren@uu.nl}
+
+
+
+% BIBLIOGRAPHY
+\usepackage[authoryear]{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
+
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+
+\begin{document}
+
+
+\begin{abstract}
+Abstract goes here
+\end{abstract}
+\keywords{keywords}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+What is synthetic data?
+
+What is high-utility synthetic data?
+
+\begin{itemize}
+\item
+  Specific utility: more detailed, but often you do not have sufficient
+  knowledge about the analyses that will be performed with the data.
+\item
+  General utility: provide an intuition of the general quality of the
+  synthetic data, and ideally cover the specific utility measures.
+\end{itemize}
+
+Current ways to assess the utility?
+
+\begin{itemize}
+\item
+  pMSE - logistic, regression, CART models (Snoke, Raab, Nowok, Dibben
+  \& Slavkovic, 2018; General and specific utility measures for
+  synthetic data AND Woo, Reiter, Oganian \& Karr, 2009; Global measures
+  of data utlity for microdata masked for disclosure limitation)
+\item
+  Kullback-Leiber divergence (Karr, Kohnen, Oganian, Reiter \& Sanil,
+  2006; A framework for evaluating the utility of data altered to
+  protect confidentiality).
+\item
+  According to multiple authors, both specific and general utility
+  measures have important drawbacks (see Drechsler Utility PSD; cites
+  others). Narrow measures potentially focus on analyses that are not
+  relevant for the end user, and do not generalize to the analyses that
+  are relevant. Global utility measures are generally too broad, and
+  important deviations in the synthetic data might be missed. Moreover,
+  the measures are typically hard to interpret.
+\item
+  See Drechsler for a paragraph on fit for purpose measures, that lie
+  between general and specific utility measures (i.e., plausibility
+  checks such as non-negativity; goodness of fit measures as \(\chi^2\)
+  for cross-tabulations; Kolmogorov-Smirnov).
+\item
+  Drechsler also illustrates that the standardized \(pMSE\) has
+  substantial flaws, as the results are highly dependent on the model
+  used to estimate the propensity scores, and unable to detect important
+  differences in the utility for most of the model specifications.
+  Hence, it is claimed that a thorough assessment of utility is
+  required.
+\end{itemize}
+
+Our proposal
+
+\begin{itemize}
+\tightlist
+\item
+  density ratio methods
+\end{itemize}
+
+-- Why?
+
+\begin{itemize}
+\tightlist
+\item
+  Implementation in R-package (SynUtility)
+\end{itemize}
+
+\hypertarget{density-estimation}{%
+\section{density estimation}\label{density-estimation}}
+
+Options: - Prediction models: logistic regression, SVM, CART? -
+Multivariate density estimation - density ratio?
+
+Dimension reduction and visualization?
+
+\hypertarget{methodology}{%
+\section{Methodology}\label{methodology}}
+
+TO DO
+
+\hypertarget{simulations}{%
+\section{Simulations}\label{simulations}}
+
+TO DO
+
+\hypertarget{real-data-example}{%
+\section{Real data example}\label{real-data-example}}
+
+TO DO
+
+\hypertarget{results}{%
+\section{Results}\label{results}}
+
+TO DO
+
+\hypertarget{discussion-and-conclusion}{%
+\section{Discussion and conclusion}\label{discussion-and-conclusion}}
+
+TO DO
+
+\bibliographystyle{rss}
+\bibliography{bibliography}
+
+
+\end{document}
