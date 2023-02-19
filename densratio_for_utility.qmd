@@ -1,0 +1,196 @@
+---
+title: "Can density ratio fitting be an easier and more generally applicable alternative to the $pMSE$?"
+format: html
+date: last-modified
+author: Thom Benjamin Volker
+---
+
+The $pMSE$ has problems when the goal is to detect missing relationships between variables. We now assess whether density ratio fitting better equiped for this problem.
+
+```{r}
+#| message: false
+#| warning: false
+library(synthpop)
+library(patchwork)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(lfda)
+library(densratio)
+```
+
+
+## Generate data
+
+### Three predictor variables
+
+```{r}
+set.seed(123)
+
+N <- 500
+r <- 0.5
+
+P3 <- 3
+M3 <- rep(0, P3)
+
+SR3 <- matrix(r, P3, P3)
+diag(SR3) <- 1
+
+SS3 <- diag(P3)
+
+XR3 <- rnorm(N*P3) |> matrix(N, P3) %*% chol(SR3)
+XS3 <- rnorm(N*P3) |> matrix(N, P3) %*% chol(SS3)
+```
+
+### Ten predictor variables
+
+```{r}
+P10 <- 10
+M10 <- rep(0, P10)
+
+SR10 <- matrix(r, P10, P10)
+diag(SR10) <- 1
+
+SS10 <- diag(P10)
+
+XR10 <- rnorm(N*P10) |> matrix(N, P10) %*% chol(SR10)
+XS10 <- rnorm(N*P10) |> matrix(N, P10) %*% chol(SS10)
+```
+
+### Twenty predictor variables
+
+```{r}
+P20 <- 20
+M20 <- rep(0, P20)
+
+SR20 <- matrix(r, P20, P20)
+diag(SR20) <- 1
+
+SS20 <- diag(P20)
+
+XR20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SR20)
+XS20 <- rnorm(N*P20) |> matrix(N, P20) %*% chol(SS20)
+```
+
+### Combine data sets
+
+```{r}
+XR <- list(XR3, XR10, XR20)
+XS <- list(XS3, XS10, XS20)
+```
+
+# Density ratio fitting without dimension reduction
+
+```{r}
+#| cache: true
+
+square <- function(x) x^2
+
+obs <- map2(XR, XS, function(real, synthetic) {
+  out <- densratio(real, synthetic, verbose = F)
+  bind_rows(data.frame(real), data.frame(synthetic)) |>
+    out$compute_density_ratio() |>
+    log() |>
+    square() |>
+    mean() |>
+    sqrt()
+})
+
+future::plan(future::multisession)
+
+ref <- map2(XR, XS, ~ furrr::future_map_dbl(1:100, function(x) {
+  D <- bind_rows(data.frame(.x), data.frame(.y))
+  ID <- sample(nrow(D), nrow(.x))
+  D1 <- D[ID, ]
+  D2 <- D[-ID, ]
+  out <- densratio(D1, D2, verbose=F)
+  out$compute_density_ratio(D) |>
+    log() |>
+    square() |>
+    mean() |>
+    sqrt()
+}, .options = furrr::furrr_options(seed = T)))
+
+# Observed root mean squared log density ratio
+obs 
+# Permutation reference distribution ofroot mean squared log density ratio
+map(ref, quantile) 
+
+# Visualization of observed against reference distribution
+map2(ref, obs, ~ ggplot(NULL, aes(.x)) +
+      geom_histogram() +
+      geom_vline(xintercept = .y, col = "orange")) |>
+  patchwork::wrap_plots(ncol = 3)
+```
+
+The density ratio is structurally more extreme than what would be expected based on the null distribution, using bootstrapped samples, but there isn't a clear trend in the direction of the effect. 
+
+```{r}
+#| cache: true
+ref2 <- map(list(R3 = SR3, R10 = SR10, R20 = SR20), 
+    ~ furrr::future_map_dbl(1:100, function(x) {
+      P <- length(diag(.x))
+      R1 <- rnorm(N*P) |> matrix(N, P) %*% chol(.x)
+      R2 <- rnorm(N*P) |> matrix(N, P) %*% chol(.x)
+      out <- densratio(R1, R2, verbose = F)
+      bind_rows(data.frame(R1), data.frame(R2)) |>
+        out$compute_density_ratio() |>
+        log() |>
+        square() |>
+        mean() |>
+        sqrt()
+    }, .options = furrr::furrr_options(seed = T)))
+
+obs
+map(ref2, quantile)
+```
+
+# Density ratio fitting after LFDA
+
+```{r}
+#| cache: true
+
+obs_lfda <- map2(XR, XS, function(real, synthetic) {
+  X <- bind_rows(data.frame(real), data.frame(synthetic))
+  Y <- rep(c("Real", "Synthetic"), times = c(nrow(real), nrow(synthetic)))
+  red <- lfda(X, Y, r = 2, metric = "orthonormalized")$Z |> data.frame()
+  out <- densratio(red |> filter(row_number() <= nrow(real)),
+                   red |> filter(row_number() > nrow(real)), 
+                   verbose = F)
+  out$compute_density_ratio(red) |>
+    log() |>
+    square() |>
+    mean() |>
+    sqrt()
+})
+
+future::plan(future::multisession)
+
+ref_lfda <- map2(XR, XS, ~ furrr::future_map_dbl(1:100, function(x) {
+  X <- bind_rows(data.frame(.x), data.frame(.y))
+  Y <- sample(rep(c(0,1), times = c(nrow(.x), nrow(.y))))
+  red <- lfda(X, Y, r = 2, metric = "orthonormalized")$Z |> data.frame()
+  out <- densratio(red |> filter(Y == 0),
+                   red |> filter(Y == 1), 
+                   verbose = F)
+
+  out$compute_density_ratio(red) |>
+    log() |>
+    square() |>
+    mean() |>
+    sqrt()
+}, .options = furrr::furrr_options(seed = T)))
+
+# Observed mean squared log density ratio
+obs_lfda
+# Permutation reference distribution of mean squared log density ratio
+map(ref_lfda, quantile) 
+
+# Visualization of observed against reference distribution
+map2(ref_lfda, obs_lfda, ~ ggplot(NULL, aes(.x)) +
+      geom_histogram() +
+      geom_vline(xintercept = .y, col = "orange")) |>
+  patchwork::wrap_plots(ncol = 3)
+```
+
+
