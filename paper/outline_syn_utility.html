@@ -121,14 +121,14 @@ div.csl-indent {
 </section>
 <section id="methodology" class="level1">
 <h1>Methodology</h1>
-<p><strong>Section 1: density estimation</strong></p>
-<p>Decide on whether density estimation will be included.</p>
-<p><strong>Section 2: density ratio estimation</strong></p>
-<p>Apparently this is easier than density estimation.</p>
+<p>Moet hier iets van een brief overview over data perturbation techniques/data synthesis?</p>
+<p><strong>Section 1: density ratio estimation</strong></p>
+<p>In essence, the goal of utility measures is to quantify the similarity between the multivariate distribution of the observed data with the distribution of the altered data. If the used data perturbation techniques, or synthetic data generation models, approximate the distribution of the real data sufficiently, these distributions should be highly similar, and analyses on the two data sets should give similar results. However, estimating the probability distribution of a data set is known to be one of the most complicated challenges in statistics [E.G. Vapnik 1998]. Estimating the probability distribution for both observed and altered data can lead to errors in both, and subsequent comparisons between the two will affected by both errors. The procedure can be simplified by using density ratio estimation, because this only requires to estimate a single probability distribution (i.e., the ratio of two probability distributions is again a probability distribution).</p>
 <p>Check section 10.2 in density ratio estimation in machine learning. Two-sample test/homogeneity test (Kullback, 1959): test whether probability distributions be behind two sets of samples are equivalent.</p>
 <p>“A standard approach to the two-sample test is to estimate a divergence between two probability distributions (Keziou &amp; Leoni-Aubin, 2005; Kanamori et al., 2011a). A key observation is that a general class of divergences (Ali &amp; Silvey, 1966; Csiszár, 1967), including the Kullback-Leibler divergene (Kullback &amp; Leibler, 1951) and the Pearson divergence (Pearson 1900) can be approximated accurately via density-ratio estimation (Nguyen et al., 2010; Sugiyama et al., 2011c), resulting in better test accuracy than estimating the distributions separately.”</p>
+<p>The difficulty of density ratio estimation increases with the dimensionality of the data. Therefore, we propose to combine density ratio estimation with supervised dimension reduction techniques to assess the utility of altered data.</p>
 <p><strong>Section 3: theoretical comparison with conventional approaches for general utility assessment</strong></p>
-<p>Shortly detail <span class="math inline">\(pMSE\)</span> and eventually Kullback-Leibler divergence.</p>
+<p>Give some more information on the <span class="math inline">\(pMSE\)</span>, describe what it shortcomings are. The quality of the <span class="math inline">\(pMSE\)</span> highly depends on the model used to calculate the propensity scores. Give an example of logistic regression, which basically estimates whether the conditional mean of the observed and altered data is the same. Shortly detail <span class="math inline">\(pMSE\)</span> and eventually Kullback-Leibler divergence.</p>
 <p>Explain in what sense the approaches we introduce are different.</p>
 <p><strong>Section 4: Dimension reduction for visualizations</strong></p>
 <p>Explain techniques in more detail (maybe start from PCA; go to UMAP/other advanced techniques).</p>
