@@ -19,78 +19,86 @@ Openly accessible research data can accelerate scientific progress tremendously,
 Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science.
 In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data.
 In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science [@lazer_css_2009], and among top reasons for companies to not share their data with researchers [@fpf_2017]. 
-To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. 
+To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL OR HUNDEPOOL ET AL., FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. 
 In principle, all of these techniques alter the data, and limit its quality to some extent.
-That is, all disclosure limitation techniques reduce the amount of information in the data to protect the privacy of the individuals in the data. 
+That is, all disclosure limitation techniques reduce the utility of the data to protect the privacy of respondents. 
 The million-dollar question is how useful the altered data is relative to the original.
 
-Privacy preservation
+---
 
-Synthetic data
+Answering this question allows researchers to decide what the altered data can and cannot be used for, and to evaluate the worth of conclusions drawn on the basis of these data.
+After all, inferences from the altered data are valid only up to the extent that the perturbation methods approximate the true data-generating mechanism.
+For data disseminators, a detailed assessment of the quality of the altered data can guide the procedure of altering the data. 
+If the used disclosure limitation techniques yield data with unsatisfactory properties, alternative methods can be considered to modify the data.
+Good measures of the quality of the data can guide the choice of methods used to alter the data, or, in the case of synthetic data, can steer the models that are used to generate the synthetic data.
 
-Assessment of utility is of utmost importance
+---
 
-1. Utility measures can guide finetuning the synthesis models
+In the statistical disclosure control literature, two different branches of utility measures have been distinguished: specific utility measures and general utility measures. 
 
-2. Data users want to know what the synthetic data can and can't be used for
+- Specific utility measures: focus on similarity of results obtained from analyses performed on the altered data and the collected data. GIVE EXAMPLES OF SPECIFIC UTILITY MEASURES: CONFIDENCE INTERVAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], ELLIPSOIDAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], RATIO OF ESTIMATES [TAUB ELLIOTT SAKSHAUG, 2020], NORMALIZED DIFFERENCE BETWEEN ESTIMATES [SYNTHPOP AT LEAST]. These measures only give information on the results from the analyses that have been compared. Data disseminators often have only limited knowledge on the analyses that will be performed with the altered data. Covering the entire set of potentially relevant analyses is therefore not feasible. If it was, the data disseminator could simply report the (potentially privacy-protected) results of those analyses performed on the real data, so that access to the (perturbed) data no longer yields additional benefits [see Drechsler PSD, 2022 for a similar argument]. Similarity between results on the analyses that have been performed gives no guarantee that the results will also be similar for other analyses. The use of specific utility measures is thus rather limited to determine how useful the perturbed data will be for future users. 
+- General utility measures attempt to capture how similar the multivariate distributions of the observed and altered data are. ADD EXAMPLES OF GENERAL UTILITY MEASURES: KULLBACK-LEIBLER DIVERGENCE [KARR ET AL., AMERICAN STATISTICIAN], PMSE [SNOKE ET AL., 2018]. Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses. Global utility measures in their current form are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.
 
-__Section 2: problem__
+---
 
-Measuring utility is hard.
-
-Specific utility measures vs. general utility measures
-
-1. Applying specific utility measures can be hard, as data disseminators generally do not know which analyses will be performed with the data
-
-2. Specific utility measures tend to be too narrow: high utility on one reconstructed analysis may say close to nothing about another analysis
-
-3. Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses. 
-
-4. Global utility measures are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.
-
-__Section 3: current state of the field__ (maybe switch 2\&3)
-
-Current state of the literature
-
-Ways to assess specific utility (confidence interval overlap; ellipsoidal (i.e., multivariate posterior distribution) overlap; univariate data visualizations)
-
-Ways to assess general utility
+Conceptually, global measures of utility provide a clearer picture about the usefulness of the altered data in new analyses. However, current measures that intend to assess general utility provide insufficient clarity with respect to the quality of the altered data. 
 
 1. $pMSE$ (explain, then problem: which model to use; results can vary depending on the model that is used to evaluate the synthetic data)
 
 2. Kullback-Leibler divergence (only suitable for normally distributed data).
 
-__Section 4: our contribution__
+---
 
-1. Introduce density ratio methods to compare densities of observed and synthetic sets.
+__Section 5: our contribution__
 
-- Maybe also incorporate something about density estimation methods (Wasserman; I have to read more about this first)
+Introduce density ratio methods to compare densities of observed and synthetic sets. 
+Shortly note that density estimation is a complicated endeavor, especially if the goal is to compare to distinct densities, and that having to estimate just a single density (ratio) is generally much easier.
 
-2. Bridge the gap between specific and general utility measures, by using dimension reduction techniques to visualize the discrepancies between the observed and synthetic data. 
+1. Note that density ratio estimation can capture specific and general utility measures into a common framework by being applicable on the level of the entire data, but also on the subset of variables that is relevant in an analysis. 
 
-3. Perform a simulation study to give indications about which methods to use (think about how to do this). 
+2. Because density ratio estimation can be difficult for high-dimensional data sets, we use dimension reduction techniques to capture most of the variability in the data in fewer dimensions on which density ratio estimation can be applied. 
 
-4. Implement all this in an R-package
+3. A second advantage of dimension reduction techniques is that is allows to visualize discrepancies between observed and altered data on a low-dimensional subspace. 
 
-__Section 5: outline article__
+4. Perform a simulation study to give indications about which methods to use (think about how to do this). 
+
+5. Implement all this in an R-package
+
+__Section 6: outline article__
+
+In the next section, we describe density ratio estimation and discuss how this method can be used as a global utility measure.
+Subsequently, we provide multiple examples that show how density ratio estimation works in the context of evaluating the quality of synthetic data. 
+Hereafter, we show in multiple simulations that the method is superior (HOPEFULLY) to current global utility measures as the $pMSE$. 
+Lastly, we discuss the advantages and disadvantages of density ratio estimation as a utility measure.
+
 
 # Methodology
 
-__Section 1: density estimation__
+Moet hier iets van een brief overview over data perturbation techniques/data synthesis?
 
-Decide on whether density estimation will be included.
+__Section 1: density ratio estimation__
 
-__Section 2: density ratio estimation__
-
-Apparently this is easier than density estimation.
+In essence, the goal of utility measures is to quantify the similarity between the multivariate distribution of the observed data with the distribution of the altered data. 
+If the used data perturbation techniques, or synthetic data generation models, approximate the distribution of the real data sufficiently, these distributions should be highly similar, and analyses on the two data sets should give similar results. 
+However, estimating the probability distribution of a data set is known to be one of the most complicated challenges in statistics [E.G. Vapnik 1998].
+Estimating the probability distribution for both observed and altered data can lead to errors in both, and subsequent comparisons between the two will affected by both errors. 
+The procedure can be simplified by using density ratio estimation, because this only requires to estimate a single probability distribution (i.e., the ratio of two probability distributions is again a probability distribution).
 
 Check section 10.2 in density ratio estimation in machine learning. 
 Two-sample test/homogeneity test (Kullback, 1959): test whether probability distributions be behind two sets of samples are equivalent.
 
 "A standard approach to the two-sample test is to estimate a divergence between two probability distributions (Keziou & Leoni-Aubin, 2005; Kanamori et al., 2011a). A key observation is that a general class of divergences (Ali & Silvey, 1966; Csiszár, 1967), including the Kullback-Leibler divergene (Kullback & Leibler, 1951) and the Pearson divergence (Pearson 1900) can be approximated accurately via density-ratio estimation (Nguyen et al., 2010; Sugiyama et al., 2011c), resulting in better test accuracy than estimating the distributions separately."
 
+The difficulty of density ratio estimation increases with the dimensionality of the data. 
+Therefore, we propose to combine density ratio estimation with supervised dimension reduction techniques to assess the utility of altered data. 
+
+
+
 __Section 3: theoretical comparison with conventional approaches for general utility assessment__
 
+Give some more information on the $pMSE$, describe what it shortcomings are. 
+The quality of the $pMSE$ highly depends on the model used to calculate the propensity scores. 
+Give an example of logistic regression, which basically estimates whether the conditional mean of the observed and altered data is the same. 
 Shortly detail $pMSE$ and eventually Kullback-Leibler divergence. 
 
 Explain in what sense the approaches we introduce are different.

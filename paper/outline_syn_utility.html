@@ -91,44 +91,33 @@ div.csl-indent {
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p><strong>Section 1: relevance</strong></p>
-<p>Openly accessible research data can accelerate scientific progress tremendously, by allowing a wide audience of researchers to evaluate their theories and validate existing ones. Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science. In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data. In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science <span class="citation" data-cites="lazer_css_2009">(<a href="#ref-lazer_css_2009" role="doc-biblioref">Lazer et al. 2009</a>)</span>, and among top reasons for companies to not share their data with researchers <span class="citation" data-cites="fpf_2017">(<a href="#ref-fpf_2017" role="doc-biblioref">Future of Privacy Forum 2017</a>)</span>. To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. In principle, all of these techniques alter the data, and limit its quality to some extent. That is, all disclosure limitation techniques reduce the amount of information in the data to protect the privacy of the individuals in the data. The million-dollar question is how useful the altered data is relative to the original.</p>
-<p>Privacy preservation</p>
-<p>Synthetic data</p>
-<p>Assessment of utility is of utmost importance</p>
-<ol type="1">
-<li><p>Utility measures can guide finetuning the synthesis models</p></li>
-<li><p>Data users want to know what the synthetic data can and can’t be used for</p></li>
-</ol>
-<p><strong>Section 2: problem</strong></p>
-<p>Measuring utility is hard.</p>
-<p>Specific utility measures vs.&nbsp;general utility measures</p>
-<ol type="1">
-<li><p>Applying specific utility measures can be hard, as data disseminators generally do not know which analyses will be performed with the data</p></li>
-<li><p>Specific utility measures tend to be too narrow: high utility on one reconstructed analysis may say close to nothing about another analysis</p></li>
-<li><p>Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses.</p></li>
-<li><p>Global utility measures are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.</p></li>
-</ol>
-<p><strong>Section 3: current state of the field</strong> (maybe switch 2&amp;3)</p>
-<p>Current state of the literature</p>
-<p>Ways to assess specific utility (confidence interval overlap; ellipsoidal (i.e., multivariate posterior distribution) overlap; univariate data visualizations)</p>
-<p>Ways to assess general utility</p>
+<p>Openly accessible research data can accelerate scientific progress tremendously, by allowing a wide audience of researchers to evaluate their theories and validate existing ones. Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science. In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data. In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science <span class="citation" data-cites="lazer_css_2009">(<a href="#ref-lazer_css_2009" role="doc-biblioref">Lazer et al. 2009</a>)</span>, and among top reasons for companies to not share their data with researchers <span class="citation" data-cites="fpf_2017">(<a href="#ref-fpf_2017" role="doc-biblioref">Future of Privacy Forum 2017</a>)</span>. To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL OR HUNDEPOOL ET AL., FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. In principle, all of these techniques alter the data, and limit its quality to some extent. That is, all disclosure limitation techniques reduce the utility of the data to protect the privacy of respondents. The million-dollar question is how useful the altered data is relative to the original.</p>
+<hr>
+<p>Answering this question allows researchers to decide what the altered data can and cannot be used for, and to evaluate the worth of conclusions drawn on the basis of these data. After all, inferences from the altered data are valid only up to the extent that the perturbation methods approximate the true data-generating mechanism. For data disseminators, a detailed assessment of the quality of the altered data can guide the procedure of altering the data. If the used disclosure limitation techniques yield data with unsatisfactory properties, alternative methods can be considered to modify the data. Good measures of the quality of the data can guide the choice of methods used to alter the data, or, in the case of synthetic data, can steer the models that are used to generate the synthetic data.</p>
+<hr>
+<p>In the statistical disclosure control literature, two different branches of utility measures have been distinguished: specific utility measures and general utility measures.</p>
+<ul>
+<li>Specific utility measures: focus on similarity of results obtained from analyses performed on the altered data and the collected data. GIVE EXAMPLES OF SPECIFIC UTILITY MEASURES: CONFIDENCE INTERVAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], ELLIPSOIDAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], RATIO OF ESTIMATES [TAUB ELLIOTT SAKSHAUG, 2020], NORMALIZED DIFFERENCE BETWEEN ESTIMATES [SYNTHPOP AT LEAST]. These measures only give information on the results from the analyses that have been compared. Data disseminators often have only limited knowledge on the analyses that will be performed with the altered data. Covering the entire set of potentially relevant analyses is therefore not feasible. If it was, the data disseminator could simply report the (potentially privacy-protected) results of those analyses performed on the real data, so that access to the (perturbed) data no longer yields additional benefits [see Drechsler PSD, 2022 for a similar argument]. Similarity between results on the analyses that have been performed gives no guarantee that the results will also be similar for other analyses. The use of specific utility measures is thus rather limited to determine how useful the perturbed data will be for future users.</li>
+<li>General utility measures attempt to capture how similar the multivariate distributions of the observed and altered data are. ADD EXAMPLES OF GENERAL UTILITY MEASURES: KULLBACK-LEIBLER DIVERGENCE [KARR ET AL., AMERICAN STATISTICIAN], PMSE [SNOKE ET AL., 2018]. Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses. Global utility measures in their current form are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.</li>
+</ul>
+<hr>
+<p>Conceptually, global measures of utility provide a clearer picture about the usefulness of the altered data in new analyses. However, current measures that intend to assess general utility provide insufficient clarity with respect to the quality of the altered data.</p>
 <ol type="1">
 <li><p><span class="math inline">\(pMSE\)</span> (explain, then problem: which model to use; results can vary depending on the model that is used to evaluate the synthetic data)</p></li>
 <li><p>Kullback-Leibler divergence (only suitable for normally distributed data).</p></li>
 </ol>
-<p><strong>Section 4: our contribution</strong></p>
+<hr>
+<p><strong>Section 5: our contribution</strong></p>
+<p>Introduce density ratio methods to compare densities of observed and synthetic sets. Shortly note that density estimation is a complicated endeavor, especially if the goal is to compare to distinct densities, and that having to estimate just a single density (ratio) is generally much easier.</p>
 <ol type="1">
-<li>Introduce density ratio methods to compare densities of observed and synthetic sets.</li>
-</ol>
-<ul>
-<li>Maybe also incorporate something about density estimation methods (Wasserman; I have to read more about this first)</li>
-</ul>
-<ol start="2" type="1">
-<li><p>Bridge the gap between specific and general utility measures, by using dimension reduction techniques to visualize the discrepancies between the observed and synthetic data.</p></li>
+<li><p>Note that density ratio estimation can capture specific and general utility measures into a common framework by being applicable on the level of the entire data, but also on the subset of variables that is relevant in an analysis.</p></li>
+<li><p>Because density ratio estimation can be difficult for high-dimensional data sets, we use dimension reduction techniques to capture most of the variability in the data in fewer dimensions on which density ratio estimation can be applied.</p></li>
+<li><p>A second advantage of dimension reduction techniques is that is allows to visualize discrepancies between observed and altered data on a low-dimensional subspace.</p></li>
 <li><p>Perform a simulation study to give indications about which methods to use (think about how to do this).</p></li>
 <li><p>Implement all this in an R-package</p></li>
 </ol>
-<p><strong>Section 5: outline article</strong></p>
+<p><strong>Section 6: outline article</strong></p>
+<p>In the next section, we describe density ratio estimation and discuss how this method can be used as a global utility measure. Subsequently, we provide multiple examples that show how density ratio estimation works in the context of evaluating the quality of synthetic data. Hereafter, we show in multiple simulations that the method is superior (HOPEFULLY) to current global utility measures as the <span class="math inline">\(pMSE\)</span>. Lastly, we discuss the advantages and disadvantages of density ratio estimation as a utility measure.</p>
 </section>
 <section id="methodology" class="level1">
 <h1>Methodology</h1>
