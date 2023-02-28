@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>OUTLINE: Density ratio estimation as a technique for assessing the utility of synthetic data</title>
+<title>Data quality after disclosure limitation: A density-ratio perspective on utility</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -57,15 +57,36 @@ div.csl-indent {
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#target-outlet" id="toc-target-outlet" class="nav-link active" data-scroll-target="#target-outlet">Target outlet</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
+  <li><a href="#simulations" id="toc-simulations" class="nav-link" data-scroll-target="#simulations">Simulations</a>
+  <ul class="collapse">
+  <li><a href="#small-illustration-example-with-multivariate-gaussian-distributions." id="toc-small-illustration-example-with-multivariate-gaussian-distributions." class="nav-link" data-scroll-target="#small-illustration-example-with-multivariate-gaussian-distributions.">Small illustration / example with multivariate Gaussian distributions.</a></li>
+  <li><a href="#more-complex-simulation-more-variables-non-linearities-perhaps-using-real-data." id="toc-more-complex-simulation-more-variables-non-linearities-perhaps-using-real-data." class="nav-link" data-scroll-target="#more-complex-simulation-more-variables-non-linearities-perhaps-using-real-data.">More complex simulation, more variables, non-linearities, perhaps using real data.</a></li>
+  </ul></li>
+  <li><a href="#real-data-example" id="toc-real-data-example" class="nav-link" data-scroll-target="#real-data-example">Real data example</a></li>
+  <li><a href="#methodology-1" id="toc-methodology-1" class="nav-link" data-scroll-target="#methodology-1">Methodology</a></li>
+  <li><a href="#simulations-1" id="toc-simulations-1" class="nav-link" data-scroll-target="#simulations-1">Simulations</a></li>
+  <li><a href="#real-data-example-1" id="toc-real-data-example-1" class="nav-link" data-scroll-target="#real-data-example-1">Real data example</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#discussion-and-conclusion" id="toc-discussion-and-conclusion" class="nav-link" data-scroll-target="#discussion-and-conclusion">Discussion and conclusion</a></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">OUTLINE: Density ratio estimation as a technique for assessing the utility of synthetic data</h1>
+<h1 class="title">Data quality after disclosure limitation: A density-ratio perspective on utility</h1>
 </div>
 
 
@@ -90,61 +111,65 @@ div.csl-indent {
 </section>
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p><strong>Section 1: relevance</strong></p>
-<p>Openly accessible research data can accelerate scientific progress tremendously, by allowing a wide audience of researchers to evaluate their theories and validate existing ones. Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science. In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data. In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science <span class="citation" data-cites="lazer_css_2009">(<a href="#ref-lazer_css_2009" role="doc-biblioref">Lazer et al. 2009</a>)</span>, and among top reasons for companies to not share their data with researchers <span class="citation" data-cites="fpf_2017">(<a href="#ref-fpf_2017" role="doc-biblioref">Future of Privacy Forum 2017</a>)</span>. To overcome these obstacles, data collectors can employ a suite of different disclosure limitation techniques when sharing data, ranging to altering some values (i.e., through top-coding, record-swapping or adding noise) to creating entirely synthetic data [SEE DE WAAL OR HUNDEPOOL ET AL., FOR AN OVERVIEW; ALSO DRECHSLER BOOK]. In principle, all of these techniques alter the data, and limit its quality to some extent. That is, all disclosure limitation techniques reduce the utility of the data to protect the privacy of respondents. The million-dollar question is how useful the altered data is relative to the original.</p>
+<p>Openly accessible research data can accelerate scientific progress tremendously, by allowing a wide audience of researchers to evaluate their theories and validate existing ones. Additionally, making research data available in combination with analysis code allows others to evaluate and replicate results reported in journal articles, improving the credibility of science. In many circumstances, sharing research data bears a risk of disclosing sensitive attributes of the individuals that comprise the data. In fact, privacy constraints have been named among the biggest hurdles in the advancement of computational social science <span class="citation" data-cites="lazer_css_2009">(<a href="#ref-lazer_css_2009" role="doc-biblioref">Lazer et al. 2009</a>)</span>, and among top reasons for companies to not share their data with researchers <span class="citation" data-cites="fpf_2017">(<a href="#ref-fpf_2017" role="doc-biblioref">Future of Privacy Forum 2017</a>)</span>. To overcome these obstacles, data providers can employ a suite of different disclosure limitation techniques before sharing data, for example top-coding, record-swapping or adding noise <span class="citation" data-cites="hundepool_disclosure_2012 willenborg_elements_2012">(e.g., <a href="#ref-hundepool_disclosure_2012" role="doc-biblioref">Hundepool et al. 2012</a>; <a href="#ref-willenborg_elements_2012" role="doc-biblioref">Willenborg and De Waal 2012</a>)</span>.</p>
+<p>Recently, synthetic data as a means to disclosure limitation has gained substantial traction. The idea of synthetic data is to replace some, or all, of the observed values in a data set by synthetic records that are generated from some model <span class="citation" data-cites="little_statistical_1993 rubin_statistical_1993 drechsler_synthetic_2011">(e.g., <a href="#ref-little_statistical_1993" role="doc-biblioref">Little 1993</a>; <a href="#ref-rubin_statistical_1993" role="doc-biblioref">Rubin 1993</a>; <a href="#ref-drechsler_synthetic_2011" role="doc-biblioref">Drechsler 2011</a>)</span>. Essentially, the idea is to approximate the data-generating distribution with a model from which new values are generated. These techniques were originally closely related to methods used for multiple imputation of missing data, such as sequential regression procedures techniques <span class="citation" data-cites="synthpop">(e.g., <a href="#ref-synthpop" role="doc-biblioref">Nowok, Raab, and Dibben 2016</a>)</span> or fully conditional specification <span class="citation" data-cites="volker_vink_synthetic_mice_2021">(<a href="#ref-volker_vink_synthetic_mice_2021" role="doc-biblioref">Volker and Vink 2021</a>)</span>, also knows as Multivariate Imputation by Chained Equations <span class="citation" data-cites="mice">(MICE; <a href="#ref-mice" role="doc-biblioref">van Buuren and Groothuis-Oudshoorn 2011</a>)</span>. Recently, the computer science community added a great deal of novel methods for data synthesis based on deep learning techniques <span class="citation" data-cites="xu_ctgan_2019 park_tablegan_2018 yoon2020anonymization">(e.g., <a href="#ref-xu_ctgan_2019" role="doc-biblioref">Xu et al. 2019</a>; <a href="#ref-park_tablegan_2018" role="doc-biblioref">Park et al. 2018</a>; <a href="#ref-yoon2020anonymization" role="doc-biblioref">Yoon, Drumright, and Van Der Schaar 2020</a>)</span>.</p>
+<p>@Peter-Paul, vraag voor jou: denk je dat het beter is om ons alleen op synthetische data te richten, of dat we het breder kunnen trekken naar statistical disclosure limitation techniques in het algemeen? <span class="citation" data-cites="karr_utility_2006">Karr et al. (<a href="#ref-karr_utility_2006" role="doc-biblioref">2006</a>)</span> hebben het bijvoorbeeld over utility measures voor disclosure limitation (en nog niet voor synthetische data); misschien kunnen we daarbij aansluiten.</p>
+<p>All methods for statistical disclosure limitation alter the data before these are provided to the public. By doing so, the utility of the provided data is always lower than the utility of the original data, because some of the information in the data is sacrificed to protect the privacy of the respondents. The questions that naturally arise are how much information in the original data is actually sacrificed, and how useful the provided data are? Answering this question allows researchers to decide what the altered data can and cannot be used for, and to evaluate the worth of conclusions drawn on the basis of these data. After all, inferences from the altered data are valid only up to the extent that the perturbation methods approximate the true data-generating mechanism. For data providers, a detailed assessment of the quality of the altered data can guide the procedure of altering the data. Statistical disclosure limitation is often an iterative process: some disclosure limitation technique is applied on the data, after which the result is investigated and modifications are made to applied process. Good measures of data quality are essential to determine the appropriate mechanisms used to protect the data, and can help to improve the utility of the data that will be disseminated.</p>
+<p>In the statistical disclosure control literature, two different branches of utility measures have been distinguished: specific utility measures and general utility measures. <em>Add one/two sentences on the merit of visualization when assessing utility of altered data.</em> Specific utility measures focus on similarity of results obtained from analyses performed on the altered data and the original data. For example, after fitting the same analysis model on both data sets, one can calculate the confidence interval overlap of the estimated parameters <span class="citation" data-cites="karr_utility_2006">(<a href="#ref-karr_utility_2006" role="doc-biblioref">Karr et al. 2006</a>)</span>. Alternative measures are ellipsoidal overlap <span class="citation" data-cites="karr_utility_2006">(<a href="#ref-karr_utility_2006" role="doc-biblioref">Karr et al. 2006</a>)</span>, which extends to confidence interval overlap to a measure that addresses the joint distribution of all model parameters simultaneous, the standardized absolute difference between estimates <span class="citation" data-cites="snoke_utility_2018">(<a href="#ref-snoke_utility_2018" role="doc-biblioref">Snoke et al. 2018</a>)</span>, and the ratio of estimates for tabular count data <span class="citation" data-cites="taub2020impact">(<a href="#ref-taub2020impact" role="doc-biblioref">Taub, Elliot, and Sakshaug 2020</a>)</span>. As these measures quantify similarity between estimates from analyses performed on the observed and altered data, they are informed only to the extent that data users will recreate those analyses. This can be highly useful if the data is provided for reproducibility purposes (e.g., for third parties to evaluate analysis scripts). However, the goal of distributing the protected data is often to allow researchers to do novel research with the data. In many practical situations, data providers thus have have only limited knowledge on the analyses that will be performed with the altered data. Covering the entire set of potentially relevant analyses is therefore not feasible. If it was, the data providers could simply report the (potentially privacy-protected) results of those analyses performed on the real data, so that access to the (perturbed) data no longer yields additional benefits <span class="citation" data-cites="drechsler_utility_2022">(for a similar argument, see <a href="#ref-drechsler_utility_2022" role="doc-biblioref">Drechsler 2022</a>)</span>. Additionally, similarity between results on the analyses that have been performed gives no guarantee that the results will also be similar for other analyses. Hence, when determining how useful the altered data is for novel research, specific utility measures are only of limited use.</p>
+<p>General utility measures attempt to capture how similar the multivariate distributions of the observed and altered data are. This can be done by, for instance, estimating the Kullback-Leibler divergence between the distributions of the observed and altered data <span class="citation" data-cites="karr_utility_2006">(<a href="#ref-karr_utility_2006" role="doc-biblioref">Karr et al. 2006</a>)</span>. An alternative strategy is to try to discriminate between the observed and altered data, as is done with the <span class="math inline">\(pMSE\)</span> <span class="citation" data-cites="snoke_utility_2018 woo_utility_2009">(<a href="#ref-snoke_utility_2018" role="doc-biblioref">Snoke et al. 2018</a>; <a href="#ref-woo_utility_2009" role="doc-biblioref">Woo et al. 2009</a>)</span>. In essence, the <span class="math inline">\(pMSE\)</span> quantifies how well one can predict whether observations are from the observed or the altered data. If better one can do this, the more pronounced the differences between the observed and altered data ought to be. However, various authors have criticized general utility measures for being too broad. That is, important discrepancies between the real and altered data might be missed, and an altered data set that is good in general (i.e., has high global utility) might still provide results that are far from the truth for some analyses <span class="citation" data-cites="drechsler_utility_2022">(see, e.g., <a href="#ref-drechsler_utility_2022" role="doc-biblioref">Drechsler 2022</a>)</span>. Additionally, it is not straightforward to determine which prediction model to use for calculating the <span class="math inline">\(pMSE\)</span>. Specifying a good prediction model in itself may be a challenging task, especially when the number of variables is large. When good models are available, different models, or even different choices of hyperparameters, may yield different results, potentially rendering ambiguity with respect to which altered data set is best. Lastly, the output of global utility measures can be hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough. That is, they give little guidance on how the quality of the altered data can be improved.</p>
 <hr>
-<p>Answering this question allows researchers to decide what the altered data can and cannot be used for, and to evaluate the worth of conclusions drawn on the basis of these data. After all, inferences from the altered data are valid only up to the extent that the perturbation methods approximate the true data-generating mechanism. For data disseminators, a detailed assessment of the quality of the altered data can guide the procedure of altering the data. If the used disclosure limitation techniques yield data with unsatisfactory properties, alternative methods can be considered to modify the data. Good measures of the quality of the data can guide the choice of methods used to alter the data, or, in the case of synthetic data, can steer the models that are used to generate the synthetic data.</p>
-<hr>
-<p>In the statistical disclosure control literature, two different branches of utility measures have been distinguished: specific utility measures and general utility measures.</p>
-<ul>
-<li>Specific utility measures: focus on similarity of results obtained from analyses performed on the altered data and the collected data. GIVE EXAMPLES OF SPECIFIC UTILITY MEASURES: CONFIDENCE INTERVAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], ELLIPSOIDAL OVERLAP [KARR ET AL., AMERICAN STATISTICIAN], RATIO OF ESTIMATES [TAUB ELLIOTT SAKSHAUG, 2020], NORMALIZED DIFFERENCE BETWEEN ESTIMATES [SYNTHPOP AT LEAST]. These measures only give information on the results from the analyses that have been compared. Data disseminators often have only limited knowledge on the analyses that will be performed with the altered data. Covering the entire set of potentially relevant analyses is therefore not feasible. If it was, the data disseminator could simply report the (potentially privacy-protected) results of those analyses performed on the real data, so that access to the (perturbed) data no longer yields additional benefits [see Drechsler PSD, 2022 for a similar argument]. Similarity between results on the analyses that have been performed gives no guarantee that the results will also be similar for other analyses. The use of specific utility measures is thus rather limited to determine how useful the perturbed data will be for future users.</li>
-<li>General utility measures attempt to capture how similar the multivariate distributions of the observed and altered data are. ADD EXAMPLES OF GENERAL UTILITY MEASURES: KULLBACK-LEIBLER DIVERGENCE [KARR ET AL., AMERICAN STATISTICIAN], PMSE [SNOKE ET AL., 2018]. Global utility measures may be too broad: important deviations might be missed and a model that is reasonably good in general may be not too good for specific analyses. Global utility measures in their current form are hard to interpret, and say little about the regions in which the synthetic data do not resemble the true data accurately enough.</li>
-</ul>
-<hr>
-<p>Conceptually, global measures of utility provide a clearer picture about the usefulness of the altered data in new analyses. However, current measures that intend to assess general utility provide insufficient clarity with respect to the quality of the altered data.</p>
+<p><strong>Section 6: our contribution</strong></p>
+<p><em>Moet nog verder uitgewerkt worden</em></p>
 <ol type="1">
-<li><p><span class="math inline">\(pMSE\)</span> (explain, then problem: which model to use; results can vary depending on the model that is used to evaluate the synthetic data)</p></li>
-<li><p>Kullback-Leibler divergence (only suitable for normally distributed data).</p></li>
-</ol>
-<hr>
-<p><strong>Section 5: our contribution</strong></p>
-<p>Introduce density ratio methods to compare densities of observed and synthetic sets. Shortly note that density estimation is a complicated endeavor, especially if the goal is to compare to distinct densities, and that having to estimate just a single density (ratio) is generally much easier.</p>
-<ol type="1">
-<li><p>Note that density ratio estimation can capture specific and general utility measures into a common framework by being applicable on the level of the entire data, but also on the subset of variables that is relevant in an analysis.</p></li>
-<li><p>Because density ratio estimation can be difficult for high-dimensional data sets, we use dimension reduction techniques to capture most of the variability in the data in fewer dimensions on which density ratio estimation can be applied.</p></li>
-<li><p>A second advantage of dimension reduction techniques is that is allows to visualize discrepancies between observed and altered data on a low-dimensional subspace.</p></li>
+<li><p>We introduce density ratio estimation to the field of statistical disclosure control. Short remark on the idea that density ratio estimation is a complicated endeavor, especially if the goal is to compare distinct densities. Having to estimate just a single density (ratio) is generally much easier.</p></li>
+<li><p>Note that density ratio estimation can capture specific and general utility measures into a common framework by being applicable on the level of the entire data, but also on the subset of variables that is relevant in an analysis. Additionally, note that confidence interval overlap, ellipsoidal overlap, but also <span class="math inline">\(pMSE\)</span> and Kullback-Leibler divergence, are closely related to density ratio estimation, and can be considered from this perspective.</p></li>
+<li><p>Create a new utility metric based on density ratio estimation (probability with respect to some reference distribution as in permutation testing).</p></li>
+<li><p>Because density ratio estimation can be difficult when there are many variables, we use dimension reduction techniques to capture most of the variability in the data in fewer dimensions on which density ratio estimation can be applied. A by-product of this is that the lower-dimensional subspace allows to create visualizations of deviations from the observed data.</p></li>
 <li><p>Perform a simulation study to give indications about which methods to use (think about how to do this).</p></li>
 <li><p>Implement all this in an R-package</p></li>
 </ol>
 <p><strong>Section 6: outline article</strong></p>
-<p>In the next section, we describe density ratio estimation and discuss how this method can be used as a global utility measure. Subsequently, we provide multiple examples that show how density ratio estimation works in the context of evaluating the quality of synthetic data. Hereafter, we show in multiple simulations that the method is superior (HOPEFULLY) to current global utility measures as the <span class="math inline">\(pMSE\)</span>. Lastly, we discuss the advantages and disadvantages of density ratio estimation as a utility measure.</p>
+<p>In the next section, we describe density ratio estimation and discuss how this method can be used as to measure utility. Subsequently, we provide multiple examples that show how density ratio estimation works in the context of evaluating the quality of synthetic data. Hereafter, we show in multiple simulations that the method is superior (HOPEFULLY) to current global utility measures as the <span class="math inline">\(pMSE\)</span>. Lastly, we discuss the advantages and disadvantages of density ratio estimation as a utility measure.</p>
 </section>
 <section id="methodology" class="level1">
 <h1>Methodology</h1>
-<p>Moet hier iets van een brief overview over data perturbation techniques/data synthesis?</p>
+<p>@Peter-Paul: Eventueel een korte beschrijving van data perturbation techniques/synthetic data generation hier. Denk je dat dit wat toevoegt hier?</p>
 <p><strong>Section 1: density ratio estimation</strong></p>
-<p>In essence, the goal of utility measures is to quantify the similarity between the multivariate distribution of the observed data with the distribution of the altered data. If the used data perturbation techniques, or synthetic data generation models, approximate the distribution of the real data sufficiently, these distributions should be highly similar, and analyses on the two data sets should give similar results. However, estimating the probability distribution of a data set is known to be one of the most complicated challenges in statistics [E.G. Vapnik 1998]. Estimating the probability distribution for both observed and altered data can lead to errors in both, and subsequent comparisons between the two will affected by both errors. The procedure can be simplified by using density ratio estimation, because this only requires to estimate a single probability distribution (i.e., the ratio of two probability distributions is again a probability distribution).</p>
-<p>Check section 10.2 in density ratio estimation in machine learning. Two-sample test/homogeneity test (Kullback, 1959): test whether probability distributions be behind two sets of samples are equivalent.</p>
-<p>“A standard approach to the two-sample test is to estimate a divergence between two probability distributions (Keziou &amp; Leoni-Aubin, 2005; Kanamori et al., 2011a). A key observation is that a general class of divergences (Ali &amp; Silvey, 1966; Csiszár, 1967), including the Kullback-Leibler divergene (Kullback &amp; Leibler, 1951) and the Pearson divergence (Pearson 1900) can be approximated accurately via density-ratio estimation (Nguyen et al., 2010; Sugiyama et al., 2011c), resulting in better test accuracy than estimating the distributions separately.”</p>
-<p>The difficulty of density ratio estimation increases with the dimensionality of the data. Therefore, we propose to combine density ratio estimation with supervised dimension reduction techniques to assess the utility of altered data.</p>
+<p>In essence, the goal of utility measures is to quantify the similarity between the multivariate distribution of the observed data with the distribution of the altered data. If the used data perturbation techniques, or synthetic data generation models, approximate the distribution of the real data sufficiently, these distributions should be highly similar, and analyses on the two data sets should give similar results. However, estimating the probability distribution of a data set is known to be one of the most complicated challenges in statistics [E.G. Vapnik 1998]. Estimating the probability distribution for both observed and altered data can lead to errors in both, artificially magnifying discrepancies between the two. Hence, subsequent comparisons will be affected by these errors. The procedure can be simplified by using density ratio estimation, because this only requires to estimate a single density.</p>
+<!-- Check section 10.2 in density ratio estimation in machine learning.  -->
+<!-- Two-sample test/homogeneity test (Kullback, 1959): test whether probability distributions be behind two sets of samples are equivalent. -->
+<!-- "A standard approach to the two-sample test is to estimate a divergence between two probability distributions (Keziou & Leoni-Aubin, 2005; Kanamori et al., 2011a). A key observation is that a general class of divergences (Ali & Silvey, 1966; Csiszár, 1967), including the Kullback-Leibler divergene (Kullback & Leibler, 1951) and the Pearson divergence (Pearson 1900) can be approximated accurately via density-ratio estimation (Nguyen et al., 2010; Sugiyama et al., 2011c), resulting in better test accuracy than estimating the distributions separately." -->
+<p>Introduce density ratio estimation as a utility measure. What does this measure mean/how to interpret it. How to make decisions based on this measure.</p>
+<p>Say something on whether (and if so, how) categorical variables can be incorporated as well.</p>
 <p><strong>Section 3: theoretical comparison with conventional approaches for general utility assessment</strong></p>
-<p>Give some more information on the <span class="math inline">\(pMSE\)</span>, describe what it shortcomings are. The quality of the <span class="math inline">\(pMSE\)</span> highly depends on the model used to calculate the propensity scores. Give an example of logistic regression, which basically estimates whether the conditional mean of the observed and altered data is the same. Shortly detail <span class="math inline">\(pMSE\)</span> and eventually Kullback-Leibler divergence.</p>
-<p>Explain in what sense the approaches we introduce are different.</p>
-<p><strong>Section 4: Dimension reduction for visualizations</strong></p>
-<p>Explain techniques in more detail (maybe start from PCA; go to UMAP/other advanced techniques).</p>
-<p>How does this follow from density estimation?</p>
+<p>Relate density ratio estimation to specific and general utility measures. Pick one/two specific utility measures and relate these to density ratio estimation (ratio of estimates seems straightforward, as well as confidence interval overlap and ellipsoidal overlap).</p>
+<p>Relate density ratio estimation to <span class="math inline">\(pMSE\)</span> and KL divergence (to some extent, both are generalizations of density ratio estimation, or at least are conceptually similar). Give some more information on the <span class="math inline">\(pMSE\)</span>, describe what it shortcomings are. The quality of the <span class="math inline">\(pMSE\)</span> highly depends on the model used to calculate the propensity scores. Perhaps give an example of logistic regression, which basically estimates whether the conditional mean of the observed and altered data is the same. Explain how density ratio estimation can overcome the shortcomings of the previously mentioned methods.</p>
+<p><strong>Section 4: Dimension reduction for utility</strong></p>
+<p>The difficulty of density ratio estimation increases with the dimensionality of the data. Therefore, we follow previous recommendations to incorporate dimensionality reduction techniques in density ratio estimation.</p>
+<p>Shortly name examples of dimensionality reduction techniques (i.e., PCA; LFDA or UMAP).</p>
+<p>A useful by-product of dimension reduction is that it allows to create visualizations, and these visualizations can be used to get more insight in discrepancies between observed and altered data. Show what such visualizations can look like, and how they can help.</p>
 </section>
 <section id="simulations" class="level1">
 <h1>Simulations</h1>
+<section id="small-illustration-example-with-multivariate-gaussian-distributions." class="level2">
+<h2 class="anchored" data-anchor-id="small-illustration-example-with-multivariate-gaussian-distributions.">Small illustration / example with multivariate Gaussian distributions.</h2>
 <ol type="1">
-<li><p>Simple, multivariate normal simulation (e.g., two correlation structures, two sample sizes, so <span class="math inline">\(2 \times 2\)</span> full factorial design)</p></li>
-<li><p>More advanced simulation (e.g., some non-linearities, different sample sizes)</p></li>
+<li>Simple, multivariate normal simulation (e.g., two correlation structures, two sample sizes, so <span class="math inline">\(2 \times 2\)</span> full factorial design); basically similar to what we did already.</li>
+</ol>
+</section>
+<section id="more-complex-simulation-more-variables-non-linearities-perhaps-using-real-data." class="level2">
+<h2 class="anchored" data-anchor-id="more-complex-simulation-more-variables-non-linearities-perhaps-using-real-data.">More complex simulation, more variables, non-linearities, perhaps using real data.</h2>
+<ol start="2" type="1">
+<li>More advanced simulation (e.g., some non-linearities, different sample sizes)</li>
 </ol>
 <p>Have to think about this in more detail still.</p>
 </section>
+</section>
 <section id="real-data-example" class="level1">
 <h1>Real data example</h1>
-<p>Clinical records heart-failure data?</p>
+<p>Clinical records heart-failure data? Misschien ook niet, nog over nadenken.</p>
+<p>Exemplify how utility measures could (should!) be used to improve the quality of the altered data (e.g., illustrate how models can be adjusted iteratively based on utility assessment).</p>
+<p><em>Some notes to self</em></p>
 <p>Current ways to assess the utility?</p>
 <ul>
 <li><p>pMSE - logistic, regression, CART models (Snoke, Raab, Nowok, Dibben &amp; Slavkovic, 2018; General and specific utility measures for synthetic data AND Woo, Reiter, Oganian &amp; Karr, 2009; Global measures of data utlity for microdata masked for disclosure limitation)</p></li>
@@ -177,11 +202,59 @@ div.csl-indent {
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-drechsler_synthetic_2011" class="csl-entry" role="doc-biblioentry">
+Drechsler, Jörg. 2011. <em>Synthetic Datasets for Statistical Disclosure Control: Theory and Implementation</em>. Springer. <a href="https://doi.org/10.1007/978-1-4614-0326-5">https://doi.org/10.1007/978-1-4614-0326-5</a>.
+</div>
+<div id="ref-drechsler_utility_2022" class="csl-entry" role="doc-biblioentry">
+———. 2022. <span>“Challenges in&nbsp;Measuring Utility for&nbsp;Fully Synthetic Data.”</span> In <em>Privacy in Statistical Databases</em>, edited by Josep Domingo-Ferrer and Maryline Laurent, 220–33. Springer International Publishing. <a href="https://doi.org/10.1007/978-3-031-13945-1_16">https://doi.org/10.1007/978-3-031-13945-1_16</a>.
+</div>
 <div id="ref-fpf_2017" class="csl-entry" role="doc-biblioentry">
 Future of Privacy Forum. 2017. <span>“Understanding Corporate Data Sharing Decisions: Practices, Challenges, and Opportunities for Sharing Corporate Data with Researchers.”</span>
 </div>
+<div id="ref-hundepool_disclosure_2012" class="csl-entry" role="doc-biblioentry">
+Hundepool, Anco, Josep Domingo-Ferrer, Luisa Franconi, Sarah Giessing, Eric Schulte Nordholt, Keith Spicer, and Peter-Paul De Wolf. 2012. <em>Statistical Disclosure Control</em>. John Wiley &amp; Sons. <a href="https://doi.org/10.1002/9781118348239">https://doi.org/10.1002/9781118348239</a>.
+</div>
+<div id="ref-karr_utility_2006" class="csl-entry" role="doc-biblioentry">
+Karr, A. F, C. N Kohnen, A Oganian, J. P Reiter, and A. P Sanil. 2006. <span>“A Framework for Evaluating the Utility of Data Altered to Protect Confidentiality.”</span> <em>The American Statistician</em> 60 (3): 224–32. <a href="https://doi.org/10.1198/000313006X124640">https://doi.org/10.1198/000313006X124640</a>.
+</div>
 <div id="ref-lazer_css_2009" class="csl-entry" role="doc-biblioentry">
 Lazer, David, Alex Pentland, Lada Adamic, Sinan Aral, Albert-László Barabási, Devon Brewer, Nicholas Christakis, et al. 2009. <span>“Computational Social Science.”</span> <em>Science</em> 323 (5915): 721–23. <a href="https://doi.org/10.1126/science.1167742">https://doi.org/10.1126/science.1167742</a>.
+</div>
+<div id="ref-little_statistical_1993" class="csl-entry" role="doc-biblioentry">
+Little, Roderick J. A. 1993. <span>“Statistical Analysis of Masked Data.”</span> <em>Journal of Official Statistics</em> 9 (2): 407–7.
+</div>
+<div id="ref-synthpop" class="csl-entry" role="doc-biblioentry">
+Nowok, Beata, Gillian M. Raab, and Chris Dibben. 2016. <span>“<span class="nocase">synthpop</span>: Bespoke Creation of Synthetic Data in <span>R</span>.”</span> <em>Journal of Statistical Software</em> 74 (11): 1–26. <a href="https://doi.org/10.18637/jss.v074.i11">https://doi.org/10.18637/jss.v074.i11</a>.
+</div>
+<div id="ref-park_tablegan_2018" class="csl-entry" role="doc-biblioentry">
+Park, Noseong, Mahmoud Mohammadi, Kshitij Gorde, Sushil Jajodia, Hongkyu Park, and Youngmin Kim. 2018. <span>“Data Synthesis Based on Generative Adversarial Networks.”</span> <em>arXiv</em>. <a href="https://doi.org/10.48550/arXiv.1806.03384">https://doi.org/10.48550/arXiv.1806.03384</a>.
+</div>
+<div id="ref-rubin_statistical_1993" class="csl-entry" role="doc-biblioentry">
+Rubin, Donald B. 1993. <span>“Statistical Disclosure Limitation.”</span> <em>Journal of Official Statistics</em> 9 (2): 461–68.
+</div>
+<div id="ref-snoke_utility_2018" class="csl-entry" role="doc-biblioentry">
+Snoke, Joshua, Gillian M. Raab, Beata Nowok, Chris Dibben, and Aleksandra Slavkovic. 2018. <span>“General and Specific Utility Measures for Synthetic Data.”</span> <em>Journal of the Royal Statistical Society. Series A (Statistics in Society)</em> 181 (3): pp. 663–688. <a href="https://www.jstor.org/stable/48547509">https://www.jstor.org/stable/48547509</a>.
+</div>
+<div id="ref-taub2020impact" class="csl-entry" role="doc-biblioentry">
+Taub, Jennifer, Mark Elliot, and Joseph W Sakshaug. 2020. <span>“The Impact of Synthetic Data Generation on Data Utility with Application to the 1991 UK Samples of Anonymised Records.”</span> <em>Transactions on Data Privacy</em> 13 (1): 1–23. <a href="http://www.tdp.cat/issues16/abs.a306a18.php">http://www.tdp.cat/issues16/abs.a306a18.php</a>.
+</div>
+<div id="ref-mice" class="csl-entry" role="doc-biblioentry">
+van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. <span>“<span class="nocase">mice</span>: Multivariate Imputation by Chained Equations in r.”</span> <em>Journal of Statistical Software</em> 45 (3): 1–67. <a href="https://doi.org/10.18637/jss.v045.i03">https://doi.org/10.18637/jss.v045.i03</a>.
+</div>
+<div id="ref-volker_vink_synthetic_mice_2021" class="csl-entry" role="doc-biblioentry">
+Volker, Thom Benjamin, and Gerko Vink. 2021. <span>“Anonymiced Shareable Data: Using Mice to Create and Analyze Multiply Imputed Synthetic Datasets.”</span> <em>Psych</em> 3 (4): 703–16. <a href="https://doi.org/10.3390/psych3040045">https://doi.org/10.3390/psych3040045</a>.
+</div>
+<div id="ref-willenborg_elements_2012" class="csl-entry" role="doc-biblioentry">
+Willenborg, Leon, and Ton De Waal. 2012. <em>Elements of Statistical Disclosure Control</em>. Springer Science &amp; Business Media. <a href="https://doi.org/10.1007/978-1-4613-0121-9">https://doi.org/10.1007/978-1-4613-0121-9</a>.
+</div>
+<div id="ref-woo_utility_2009" class="csl-entry" role="doc-biblioentry">
+Woo, Mi-Ja, Jerome P. Reiter, Anna Oganian, and Alan F. Karr. 2009. <span>“Global Measures of Data Utility for Microdata Masked for Disclosure Limitation.”</span> <em>Journal of Privacy and Confidentiality</em> 1 (1). <a href="https://doi.org/10.29012/jpc.v1i1.568">https://doi.org/10.29012/jpc.v1i1.568</a>.
+</div>
+<div id="ref-xu_ctgan_2019" class="csl-entry" role="doc-biblioentry">
+Xu, Lei, Maria Skoularidou, Alfredo Cuesta-Infante, and Kalyan Veeramachaneni. 2019. <span>“Modeling Tabular Data Using Conditional GAN.”</span> In <em>Advances in Neural Information Processing Systems</em>, edited by H. Wallach, H. Larochelle, A. Beygelzimer, F. dAlché-Buc, E. Fox, and R. Garnett. Vol. 32. Curran Associates, Inc. <a href="https://proceedings.neurips.cc/paper/2019/file/254ed7d2de3b23ab10936522dd547b78-Paper.pdf">https://proceedings.neurips.cc/paper/2019/file/254ed7d2de3b23ab10936522dd547b78-Paper.pdf</a>.
+</div>
+<div id="ref-yoon2020anonymization" class="csl-entry" role="doc-biblioentry">
+Yoon, Jinsung, Lydia N Drumright, and Mihaela Van Der Schaar. 2020. <span>“Anonymization Through Data Synthesis Using Generative Adversarial Networks (<span>ADS-GAN</span>).”</span> <em>IEEE Journal of Biomedical and Health Informatics</em> 24 (8): 2378–88. <a href="https://doi.org/10.1109/JBHI.2020.2980262">https://doi.org/10.1109/JBHI.2020.2980262</a>.
 </div>
 </div></section></div></main>
 <!-- /main column -->

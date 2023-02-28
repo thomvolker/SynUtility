@@ -1,9 +1,9 @@
 ---
 title: "Data quality after disclosure limitation: A density-ratio perspective on utility"
 format:
-  # html:
-  #   toc: true
-  #   toc_float: true
+  html:
+    toc: true
+    toc_float: true
   pdf: default
 linestretch: 2
 link-citations: true
