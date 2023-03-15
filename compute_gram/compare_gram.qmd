@@ -1,0 +1,134 @@
+---
+title: "Different approaches to calculating the kernel gram matrix"
+author: Thom Benjamin Volker
+format: 
+  html:
+    df-print: kable
+---
+
+# Introduction
+
+Constructing the Kernel Gram matrix can take a large amount of time, especially if the number of observations in the input matrix $\bf{x}$ is large. The Kernel Gram matrix $\bf{K_{x,x'}}$ is an $n \times n$ matrix, where each element is defined as
+$$
+\bf{K}_{i,j} = K(\bf{x}_i, \bf{x}_j),
+$$
+where
+$$
+K(\bf{x}_i, \bf{x}_j) = \exp \Bigg(- \frac{\left\Vert \bf{x}_i - \bf{x}_j \right\Vert^2}{2\sigma^2} \Bigg),
+$$
+and 
+$$
+\left\Vert \bf{x}_i - \bf{x}_j \right\Vert^2 = \sum_{k=1}^p (x_i^{(k)} - x_j^{(k)})^2.
+$$
+Calculating this matrix in `R` can be done in multiple different ways. The first way is to write the loop over the elements as a `C++` extension to do the calculations. This code can be written as:
+```
+NumericVector distX(NumericMatrix x, int nr, int nc) {
+  double dev, dist;
+  NumericVector out(nr*(nr-1)/2);
+  int count = 0;
+  
+  for(int i = 0; i < nr; i++) {
+    for(int j = i+1; j < nr; j++) {
+      dist = 0;
+      for (int c = 0; c < nc; c++) {
+        dev = x(i,c) - x(j,c);
+        dist += dev*dev;
+      }
+      out[count] = dist;
+      count++;
+    }
+  }
+  return out;
+}
+```
+This returns a vector with as many elements as in the lower triangular of the matrix $\bf{K_{x,x'}}$. We can implement this in a function in `R` with the following code to complete the matrix.
+
+```{r}
+cpp_f <- "NumericVector distX(NumericMatrix x, int nr, int nc) {
+  double dev, dist;
+  NumericVector out(nr*(nr-1)/2);
+  int count = 0;
+  
+  for(int i = 0; i < nr; i++) {
+    for(int j = i+1; j < nr; j++) {
+      dist = 0;
+      for (int c = 0; c < nc; c++) {
+        dev = x(i,c) - x(j,c);
+        dist += dev*dev;
+      }
+      out[count] = dist;
+      count++;
+    }
+  }
+  return out;
+}"
+
+Rcpp::cppFunction(cpp_f)
+
+distX1 <- function(x) {
+  vals <- distX(x, nrow(x), ncol(x))     # calculate kernel values in c++
+  vals <- exp(-vals)
+  testmat <- matrix(0, nrow(x), nrow(x)) # create empty matrix that can be
+  testmat[lower.tri(testmat)] <- vals    # filled with the values
+  testmat <- testmat + t(testmat)        # complete the matrix
+  testmat
+}
+```
+
+The second approach is a nested loop using `apply()` in `R`, that loops twice over the rows in the input matrix.
+
+```{r}
+distX2 <- function(x) {
+  apply(x, 1, function(i) {
+    apply(x, 1, function(j) {
+      sum((i - j)^2) |> 
+        {\(x) exp(-x)}()
+      })
+    })
+}
+```
+
+The third approach uses the function `compute_kernel_gaussian()` from the `densratio` package.
+
+```{r}
+distX3 <- function(x) {
+  densratio:::compute_kernel_Gaussian(x, x, sqrt(0.5))
+}
+```
+
+## Test whether the approaches give identical results.
+
+```{r}
+x <- matrix(1:10, 5, 2)
+
+distX1(x)
+distX2(x)
+distX3(x)
+```
+
+The resulting values are exactly identical.
+
+## Test which approach is fastest
+
+```{r}
+rbenchmark::benchmark(distX1(x),
+                      distX2(x),
+                      distX3(x),
+                      replications = 10000)
+
+x <- matrix(1:1000, 50, 20)
+
+rbenchmark::benchmark(distX1(x),
+                      distX2(x),
+                      distX3(x),
+                      replications = 1000)
+
+x <- matrix(1:10000, 500, 20)
+
+rbenchmark::benchmark(distX1(x),
+                      distX2(x),
+                      distX3(x))
+```
+
+
+
