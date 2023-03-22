@@ -1,0 +1,109 @@
+---
+title: "KMM from `densityratio` package"
+author: "Thom Benjamin Volker"
+format: html
+---
+
+# Simulate data
+
+```{r}
+set.seed(123)
+N <- 1000
+mu1 <- 1
+sd1 <- 1
+mu2 <- 0
+sd2 <- 2
+
+f1 <- function(x) dnorm(x, 1, 1)
+f2 <- function(x) dnorm(x, 0, 2)
+f1f2 <- function(x) f1(x) / f2(x)
+
+x1 <- rnorm(N, mu1, sd1)
+x2 <- rnorm(N, mu2, sd2)
+
+P <- 2
+Mu1 <- rep(1, P)
+S1  <- diag(P)
+Mu2 <- rep(0, P)
+S2  <- matrix(0.5, P, P)
+diag(S2) <- 1
+
+F1 <- function(x) mvtnorm::dmvnorm(x, Mu1, S1)
+F2 <- function(x) mvtnorm::dmvnorm(x, Mu2, S2)
+F1F2 <- function(x) F1(x) / F2(x)
+
+X1 <- rnorm(N*P) |> matrix(N,P) %*% chol(S1) + matrix(1,N) %*% Mu1
+X2 <- rnorm(N*P) |> matrix(N,P) %*% chol(S2) + matrix(1,N) %*% Mu2
+```
+
+
+# Compare univariate density ratio
+
+```{r}
+library(densityratio)
+library(ggplot2)
+library(patchwork)
+
+rhat1_unc <- kmm(x1, x2, lambda = sqrt(N))
+rhat1_con <- kmm(x1, x2, "constrained", lambda = sqrt(N))
+
+pfunc <- ggplot() +
+  stat_function(fun = f1, aes(col = "pnu")) +
+  stat_function(fun = f2, aes(col = "pde")) +
+  xlim(-7, 7) +
+  ylim(-1, 2.5) +
+  theme_minimal() +
+  scale_color_viridis_d("Density") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+pratio <- ggplot() +
+  stat_function(fun = f1f2, aes(col = "True")) +
+  geom_line(aes(x = x2, y = rhat1_unc$rhat_de, col = "Unconstrained")) +
+  geom_line(aes(x = x2, y = rhat1_con$rhat_de, col = "Constrained")) +
+  xlim(-7, 7) +
+  ylim(-1, 2.5) +
+  theme_minimal() +
+  scale_color_viridis_d("Ratio") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+
+pfunc + pratio
+```
+
+# Compare bivariate density ratio
+
+```{r}
+Z <- expand.grid(seq(-5, 5, by = .01),
+                 seq(-5, 5, by = .01))
+Z1 <- Z[,1]
+Z2 <- Z[,2]
+ZX1 <- F1(Z)
+ZX2 <- F2(Z)
+ZX1X2 <- F1F2(Z)
+Rhat  <- kmm(X1, X2, lambda = sqrt(N))
+
+Pfunc <- ggplot(mapping = aes(x = Z1, y = Z2)) + 
+  stat_contour(aes(z = ZX1, col = "X1")) +
+  stat_contour(aes(z = ZX2, col = "X2")) +
+  xlim(-5, 5) +
+  ylim(-5, 5) +
+  theme_minimal() +
+  scale_color_viridis_d()
+
+Pratio <- ggplot(mapping = aes(x = Z1, y = Z2)) +
+  stat_contour_filled(aes(z = log(ZX1X2)), alpha = 0.9) +
+  geom_point(aes(x = X2[,1], y = X2[,2], col = Rhat$rhat_de)) +
+  scale_fill_grey() +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  xlim(-5, 5) +
+  ylim(-5, 5)
+
+
+Pfunc
+
+Pratio
+```
+
+
+
