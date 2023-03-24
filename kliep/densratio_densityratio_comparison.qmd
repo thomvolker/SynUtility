@@ -1,0 +1,127 @@
+---
+title: "Compare `densityratio::kliep` and `densratio::KLIEP`"
+author: "Thom Benjamin Volker"
+format: html
+---
+
+# Sample size `N = 100`
+
+## Generate data
+
+```{r}
+library(ggplot2)
+library(densityratio)
+library(densratio)
+
+set.seed(1)
+
+N <- 100
+
+X100 <- rnorm(N, 1, 1) |> matrix()
+X200 <- rnorm(N, 0, 2) |> matrix()
+```
+
+## Real densities
+
+```{r}
+f1 <- function(x) dnorm(x, 1, 1)
+f2 <- function(x) dnorm(x, 0, 2)
+f1f2 <- function(x) f1(x)/f2(x)
+```
+
+## Estimated density ratios
+
+```{r}
+densratio_out <- KLIEP(X100, X200)
+densityratio_out <- kliep(X100, X200, 
+                          sigma = densratio_out$kernel_info$sigma,
+                          eps = 0.001,
+                          maxit = 100,
+                          printFlag = FALSE)
+
+r_densratio <- densratio_out$compute_density_ratio(X100)
+r_densityratio <- densityratio:::kernel_gaussian(X100, X100) %*% densityratio_out
+```
+
+
+
+## Visualizations
+
+
+```{r}
+ggplot() +
+  stat_function(aes(col = "N(0,1)"), fun = f1, xlim = c(-6, 6)) +
+  stat_function(aes(col = "N(1,2)"), fun = f2, xlim = c(-6, 6)) +
+  theme_minimal() +
+  scale_color_viridis_d("Density") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+
+ggplot() +
+  stat_function(aes(col = "f1/f2"), fun = f1f2, xlim = c(-5, 5)) +
+  geom_point(aes(x = X100, y = r_densratio, col = "densratio")) +
+  geom_point(aes(x = X100, y = r_densityratio, col = "densityratio")) +
+  theme_minimal() +
+  scale_color_viridis_d("Method") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+```
+
+# Sample size `N = 1000`
+
+## Generate data
+
+```{r}
+N <- 1000
+
+X1000 <- rnorm(N, 1, 1) |> matrix()
+X2000 <- rnorm(N, 0, 2) |> matrix()
+```
+
+## Estimated density ratios
+
+```{r}
+densratio_out <- KLIEP(X1000, X2000)
+
+densityratio_out_sigmaopt <- kliep(X1000, X2000,
+                                   sigma = densratio_out$kernel_info$sigma,
+                                   eps = 0.00001,
+                                   maxit = 1000,
+                                   printFlag = FALSE)
+
+densityratio_out_sigma1 <- kliep(X1000, X2000, 
+                                 sigma = 1,
+                                 eps = 0.00001,
+                                 maxit = 1000,
+                                 printFlag = FALSE)
+
+r_densratio <- densratio_out$compute_density_ratio(X1000)
+r_densityratio_sigmaopt <- densityratio:::kernel_gaussian(X1000, X1000) %*% densityratio_out_sigmaopt
+r_densityratio_sigma1 <- densityratio:::kernel_gaussian(X1000, X1000) %*% densityratio_out_sigma1
+```
+
+
+
+## Visualizations
+
+
+```{r}
+ggplot() +
+  stat_function(aes(col = "N(0,1)"), fun = f1, xlim = c(-6, 6)) +
+  stat_function(aes(col = "N(1,2)"), fun = f2, xlim = c(-6, 6)) +
+  theme_minimal() +
+  scale_color_viridis_d("Density") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+
+ggplot() +
+  stat_function(aes(col = "f1/f2"), fun = f1f2, xlim = c(-5, 5)) +
+  geom_point(aes(x = X1000, y = r_densratio, col = "densratio")) +
+  geom_point(aes(x = X1000, y = r_densityratio_sigmaopt, col = "densityratio - sigma opt")) +
+  geom_point(aes(x = X1000, y = r_densityratio_sigma1, col = "densityratio - sigma1")) +
+  theme_minimal() +
+  scale_color_viridis_d("Density") +
+  theme(legend.position = "bottom") +
+  ylab(NULL)
+```
+
