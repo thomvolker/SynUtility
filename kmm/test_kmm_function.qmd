@@ -14,8 +14,8 @@ sd1 <- 1
 mu2 <- 0
 sd2 <- 2
 
-f1 <- function(x) dnorm(x, 1, 1)
-f2 <- function(x) dnorm(x, 0, 2)
+f1 <- function(x) dnorm(x, mu1, sd1)
+f2 <- function(x) dnorm(x, mu2, sd2)
 f1f2 <- function(x) f1(x) / f2(x)
 
 x1 <- rnorm(N, mu1, sd1)
