@@ -67,13 +67,13 @@ Rcpp::cppFunction(cpp_f)
 
 distX1 <- function(x) {
   vals <- distX(x, nrow(x), ncol(x))     # calculate kernel values in c++
-  vals <- exp(-vals)
   testmat <- matrix(0, nrow(x), nrow(x)) # create empty matrix that can be
   testmat[lower.tri(testmat)] <- vals    # filled with the values
   testmat <- testmat + t(testmat)        # complete the matrix
-  testmat
+  exp(-testmat)
 }
 ```
+
 
 The second approach is a nested loop using `apply()` in `R`, that loops twice over the rows in the input matrix.
 
