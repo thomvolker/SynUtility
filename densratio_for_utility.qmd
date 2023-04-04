@@ -5,7 +5,7 @@ date: last-modified
 author: Thom Benjamin Volker
 ---
 
-The $pMSE$ has problems when the goal is to detect missing relationships between variables. We now assess whether density ratio fitting better equiped for this problem.
+The $pMSE$ has problems when the goal is to detect missing relationships between variables. We now assess whether density ratio fitting better equipped for this problem.
 
 ```{r}
 #| message: false
